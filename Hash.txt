@@ -1,0 +1,19 @@
+  vector<ll> hash(n+1,0);
+  //Hashの計算累積和的に,Hash[i] = [0,i)の半開で持つ
+  rep(i,n){
+    hash[i + 1] = ((hash[i] * 100) % mod + (ll)(s[i] - 'A')) % mod;
+  }
+
+  rep(i,q){
+    auto [a,b,c,d] = abcd[i];
+    ll f = hash[b+1] -(hash[a] * Modlpow(100,b+1-a,mod)) % mod;
+    ll l = hash[d+1] -(hash[c] * Modlpow(100,d+1-c,mod)) % mod;
+    //ハッシュ値が負になる事があるので注意する
+    if(f < 0){
+      f += mod;
+    }
+    if(l < 0){
+      l += mod;
+    }
+    
+  }

@@ -1,0 +1,31 @@
+//mod必要時,modの値変更↓
+//値の出力時.valをつける。
+const long long mod = 998244353;
+
+struct Mint {
+    int val;
+    Mint inv() const{
+        int tmp,a=val,b=mod,x=1,y=0;
+        while(b)tmp=a/b,a-=tmp*b,swap(a,b),x-=tmp*y,swap(x,y);
+        return Mint(x);
+    }
+
+public:
+    Mint():val(0){}
+    Mint(ll x){if((val=x%mod)<0)val+=mod;}
+    Mint pow(ll t){Mint res=1,b=*this; while(t){if(t&1)res*=b;b*=b;t>>=1;}return res;}
+    Mint& operator+=(const Mint& x){if((val+=x.val)>=mod)val-=mod;return *this;}
+    Mint& operator-=(const Mint& x){if((val+=mod-x.val)>=mod)val-=mod; return *this;}
+    Mint& operator*=(const Mint& x){val=(ll)val*x.val%mod; return *this;}
+    Mint& operator/=(const Mint& x){return *this*=x.inv();}
+    bool operator==(const Mint& x) const{return val==x.val;}
+    bool operator!=(const Mint& x) const{return val!=x.val;}
+    bool operator<(const Mint& x) const{return val<x.val;}
+    bool operator<=(const Mint& x) const{return val<=x.val;}
+    bool operator>(const Mint& x) const{return val>x.val;}
+    bool operator>=(const Mint& x) const{return val>=x.val;}
+    Mint operator+(const Mint& x) const{return Mint(*this)+=x;}
+    Mint operator-(const Mint& x) const{return Mint(*this)-=x;}
+    Mint operator*(const Mint& x) const{return Mint(*this)*=x;}
+    Mint operator/(const Mint& x) const{return Mint(*this)/=x;}
+};

@@ -1,0 +1,34 @@
+ll M = 1000000007;
+//M適宜変更
+mint nCr(ll n,ll r){
+  mint a = 1;
+  repsn(i,1,n){
+    a *= i;
+  }
+
+  mint b = 1;
+  repsn(i,1,r){
+    b *= i;
+  }
+  repsn(i,1,n-r){
+    b *= i;
+  }
+  return a * b.pow(M-2);
+}
+
+// Mod使わずllに収まる範囲でオーバーフローしないやつ
+
+#define CMAX 1010
+ll noinit = 1; ll memo[CMAX][CMAX];
+ll nCr(ll a, ll b) {
+    if (noinit) {
+        rep(i, CMAX) rep(j, CMAX) memo[i][j] = -1;
+        noinit = 0;
+    }
+    if (b == 0 || a == b) return 1;
+    if (0 <= memo[a][b]) return memo[a][b];
+    return memo[a][b] = nCr(a - 1, b - 1) + nCr(a - 1, b);
+}
+
+
+

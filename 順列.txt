@@ -1,0 +1,37 @@
+/*
+min以上ｍax以下の(max - min + 1)個の要素からsize個選んだ並び替え(重複許さず)
+O(P(m,n))
+usedは初期化の際0になるからresizeだけでいい
+
+!!  main関数中に 
+    memo.resize(size);
+    used.resize(size);
+    必須!!
+*/
+vector<ll> memo;
+vector<bool> used; //使用済みか判定
+void permutation(vector<vector<ll>> &perm,ll depth,ll size,ll min,ll max){
+  if(depth == size){
+    perm.push_back(memo);
+  }else{
+    repsn(num,min,max){
+      if(!used[num]){
+        memo[depth] = num;
+        used[num] = true;
+        permutation(perm,depth+1,size,min,max);
+        used[num] = false;//使い終わったから戻す
+      }
+    }
+  }
+}
+/*
+ex)
+3 1 3(size,min,max)
+
+1 2 3 
+1 3 2 
+2 1 3 
+2 3 1 
+3 1 2 
+3 2 1
+*/

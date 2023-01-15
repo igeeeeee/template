@@ -1,0 +1,18 @@
+vector<ll> s(n+1);とかして
+s[i] = [0,i)の累積和を考えると
+k = 2で、iからk個の和を考えると
+s[i+2] -s[i]とすると
+s[0,i+2) -s[0,i) = s[i,i+1]となる
+
+
+vector<vector<ll>> dp(m+1,vector<ll>(n+1))で１大きくしないと半開区間できない
+dp[m][n] = dp[0,m)[0,n)
+rep(i,m){
+  rep(j,n){
+    dp[i+1][j+1] = dp[i+1][j] + dp[i][j+1] -dp[i][j] + a[i][j];
+  }
+}
+
+dp[a,c][b,d]の長方形が知りたいときは
+
+dp[a,c][b,d] = dp[c+1][d+1] - dp[c+1][b] -dp[a][d+1] + dp[a][b];

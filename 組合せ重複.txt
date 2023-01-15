@@ -1,0 +1,34 @@
+/*
+(max - min + 1)個の要素から重複を許してsize個選んだ組み合わせ
+O( C(m+n-1,n))
+
+!!  main関数中に memo.resize(size); 必須!!
+*/
+vector<ll> memo;
+void duplicate_combination(vector<vector<ll>> &perm,ll depth,ll size,ll min,ll max){
+  if(depth == size){
+    perm.push_back(memo);
+  }else{
+    repsn(num,min,max){
+      memo[depth] = num;
+      //minをnumにすることですでに使われた値以上しか使えない
+      duplicate_combination(perm,depth+1,size,num,max);
+    }
+  }
+}
+/*
+ex)
+3 1 3 (size,min,max)
+
+1 1 1 
+1 1 2 
+1 1 3 
+1 2 2 
+1 2 3 
+1 3 3 
+2 2 2 
+2 2 3 
+2 3 3 
+3 3 3
+
+*/

@@ -1,0 +1,32 @@
+/*
+min以上max以下の(max - min + 1)個の要素からsize個選んだ組み合わせ(重複許さず)
+O(C(m,n))
+
+!!  main関数中に memo.resize(size); 必須!!
+*/
+vector<ll> memo;
+void combination(vector<vector<ll>> &perm,ll depth,ll size,ll min,ll max){
+  if(depth == size){
+    perm.push_back(memo);
+  }else{
+    repsn(num,min,max){
+      memo[depth] = num;
+      //minをnumにすることですでに使われた値より大きいのしか使えない
+      combination(perm,depth+1,size,num+1,max);
+    }
+  }
+}
+/*
+ex)
+3 1 5 (size,min,max)
+1 2 3 
+1 2 4 
+1 2 5 
+1 3 4 
+1 3 5 
+1 4 5 
+2 3 4 
+2 3 5 
+2 4 5 
+3 4 5
+*/

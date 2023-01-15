@@ -1,0 +1,11 @@
+//find 発見時刻,  fin 探索終了時刻 返り値:探索終了時刻
+ll dfs(map<ll,vector<ll>> &G,ll v,vector<ll> &find, vector<ll> &fin,ll time){
+  find[v] = time;
+
+  for(auto next:G[v]){
+    if(find[next])continue;
+    time = dfs(G,next,find,fin,time+1);
+  }
+  fin[v] = ++time;
+  return time;
+}

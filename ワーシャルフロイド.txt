@@ -1,0 +1,26 @@
+/*隣接行列を更新してくDPのイメージ
+つながってない辺は重みINF、繋がってたら辺の重みで初期化
+O(V^3)
+*/
+int warshall_floyd(vector<vector<ll>> &dist){
+  int size = (int)dist.size();
+  rep(k,size){
+    rep(i,size){
+      rep(j,size){
+        if(i == j){
+          chmin(dist[i][j],0LL);
+        }
+        if(dist[i][k] != INF && dist[k][j] != INF){
+          chmin(dist[i][j],dist[i][k] + dist[k][j]);
+        }
+      }
+    }
+  }
+  //負の閉路判定あれば−1大丈夫なら1
+  rep(i,size){
+    if(dist[i][i]<0){
+      return -1;
+    }
+  }
+  return 1;
+}

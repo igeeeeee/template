@@ -1,0 +1,10 @@
+// for AOJ or ICPC or etc..
+template<class Tp>
+bool zero (const Tp &x) {
+    return x == 0;
+}
+
+template<class Tp, class... Args>
+bool zero (const Tp &x, const Args& ...args) {
+    return zero(x) and zero(args...);
+}

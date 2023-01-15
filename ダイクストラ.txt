@@ -1,0 +1,22 @@
+void Dijkstra(vector<ll> &dis,map<ll,vector<pair<ll,ll>>> &G,ll s){
+  // G[i]<j,d> i->j の距離(d)
+  // 「仮の最短距離, 頂点」が小さい順に並ぶ
+  priority_queue<pair<ll,ll>,vector<pair<ll,ll>>,greater<pair<ll,ll>>>pq;
+  dis[s] = 0;
+  pq.push({dis[s],s});
+  while(!pq.empty()){
+    auto [len,now] = pq.top();
+    pq.pop();
+    if(dis[now]< len){
+      continue;
+    }
+    for(auto &p:G[now]){
+      // 注意！
+      auto [next,cost] = p;
+      if(dis[next] > dis[now] + cost){
+        dis[next] = dis[now] + cost;
+        pq.push({dis[next],next});
+      }
+    }
+  }
+}

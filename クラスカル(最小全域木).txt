@@ -1,0 +1,18 @@
+/*
+小さい辺から見ていって２頂点が同じグループになければそのへんを追加する
+*/
+
+ll kruskal(priority_queue<pair<ll,pair<ll,ll>>,vector<pair<ll,pair<ll,ll>>>,greater<pair<ll,pair<ll,ll>>>> pq,ll v){
+  dsu uf(v);
+  ll sum = 0;
+  while(!pq.empty()){
+    ll len = pq.top().first;
+    auto [a,b] = pq.top().second;
+    pq.pop();
+    if(!uf.same(a,b)){
+      sum += len;
+      uf.merge(a,b);
+    }
+  }
+  return sum;
+}

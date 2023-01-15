@@ -1,0 +1,15 @@
+//vector<pair> 用　もっといいやり方あるかも
+
+bool isFind(queue<pair<int,int>> u, pair<int,int> s){
+  bool isThere = false;
+  rep(i,(int)u.size()){
+    int k = u.front().first;
+    int l = u.front().second;
+    u.pop();
+    u.push({k,l});
+    if(k == s.first && l == s.second){
+      isThere = true;
+    }
+  }
+  return isThere;
+}
