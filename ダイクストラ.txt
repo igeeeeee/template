@@ -1,4 +1,4 @@
-void Dijkstra(vector<ll> &dis,map<ll,vector<pair<ll,ll>>> &G,ll s){
+void Dijkstra(vector<ll> &dis,vector<vector<pair<ll,ll>>> &G,ll s){
   // G[i]<j,d> i->j の距離(d)
   // 「仮の最短距離, 頂点」が小さい順に並ぶ
   priority_queue<pair<ll,ll>,vector<pair<ll,ll>>,greater<pair<ll,ll>>>pq;
