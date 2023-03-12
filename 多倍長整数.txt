@@ -1,0 +1,12 @@
+#include <boost/multiprecision/cpp_int.hpp> 
+
+
+namespace bmp = boost::multiprecision;
+using Bint = bmp::cpp_int;
+
+
+
+
+
+
+//浮動小数とかもある
