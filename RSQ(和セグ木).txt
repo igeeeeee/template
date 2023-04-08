@@ -33,4 +33,8 @@ class SegmentTree{
     ll ansl = query(l,r,m,b,2 * (p+1));
     return ansr + ansl;
   }
+
+  ll at(ll pos){
+    return tree[pos + siz -1]; 
+  }
 };

@@ -1,7 +1,9 @@
+using P = pair<ll,ll>;
+
 void Dijkstra(vector<ll> &dis,vector<vector<pair<ll,ll>>> &G,ll s){
   // G[i]<j,d> i->j の距離(d)
   // 「仮の最短距離, 頂点」が小さい順に並ぶ
-  priority_queue<pair<ll,ll>,vector<pair<ll,ll>>,greater<pair<ll,ll>>>pq;
+  priority_queue<P,vector<P>,greater<P>>pq;
   dis[s] = 0;
   pq.push({dis[s],s});
   while(!pq.empty()){

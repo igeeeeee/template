@@ -1,0 +1,64 @@
+struct Edge {
+	ll to,cap,rev;
+};
+
+class MaximumFlow{
+	public:
+		ll siz = 0;
+		vector<bool> used;
+		vector<vector<Edge>> G;
+		MaximumFlow(ll n){
+			siz = n;
+			used.resize(n+1);
+			G.resize(n+1);
+		}
+
+		// a からbにcリットル流せる辺を追加
+		void add_edge(ll a,ll b , ll c){
+			ll ga_size = G[a].size();
+			ll gb_size = G[b].size();
+			G[a].push_back({b,c,gb_size });
+			G[b].push_back({a,0,ga_size });
+		}
+
+		//Fはスタートからposまでの残余グラフの辺の容量の最小値
+		//返り値は流したフローの量
+		ll dfs(ll pos,ll goal,ll F){
+			// ゴールに到着
+			if(pos == goal) return F;
+
+			used[pos] = true;
+
+			for(ll i = 0; i < (ll)G[pos].size();i++){
+				// 容量0の辺は使えない
+				if(G[pos][i].cap == 0)continue;
+				//探索済みだった
+				if(used[G[pos][i].to] ==  true) continue;
+
+				ll flow = dfs(G[pos][i].to,goal,min(F,G[pos][i].cap));
+
+				// フローを流せるとき、残余グラフの容量をflowだけ増減
+				if(flow > 0){
+					G[pos][i].cap -= flow;
+					G[G[pos][i].to][G[pos][i].rev].cap += flow;
+					return flow;
+				}
+			}
+			// 見つからず
+			return 0;
+		}
+
+		ll max_flow(ll s,ll t){
+			ll Total_Flow = 0;
+			while(true){
+				for(ll i = 0;i < siz;i++)used[i] = false;
+					ll F = dfs(s,t,INF);
+
+					//流せなくなった
+					if(F== 0)break;
+					Total_Flow += F;
+			}
+			return Total_Flow;
+
+		}
+};
