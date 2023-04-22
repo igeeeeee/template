@@ -1,0 +1,15 @@
+queue<ll> que;
+//０からの距離が入る
+vector<ll> find(n,INF);
+find[0] = 0;
+que.push(0);
+while(!que.empty()){
+	ll now = que.front();
+	que.pop();
+	for(auto &p:g[now]){
+		if(find[p] == INF){
+			find[p] = find[now]+1;
+			que.push(p);
+		}
+	}
+}
