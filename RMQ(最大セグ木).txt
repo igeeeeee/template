@@ -11,6 +11,14 @@ class SegmentTree{
     siz = 1 << i;
   }
 
+  void init(ll n){
+    ll i = 0;
+    while((1 << i) < n ){
+      i++;
+    }
+    tree.resize(1<<(i+1));
+    siz = 1 << i;
+  }
   
   void update(ll pos, ll x){
     pos = pos + siz-1;

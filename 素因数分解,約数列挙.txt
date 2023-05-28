@@ -1,6 +1,6 @@
 //素因数分解
-map<ll,int> enumpr(ll n) {
-	map<ll,int> V;
+map<ll,ll> enumpr(ll n) {
+	map<ll,ll> V;
 	for(ll i=2;i*i<=n;i++) {
     while(n%i==0){
       V[i]++;
