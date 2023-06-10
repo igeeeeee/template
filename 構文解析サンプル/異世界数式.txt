@@ -1,0 +1,86 @@
+typedef string::const_iterator State;
+string expression(State &begin);
+string term(State &begin);
+string number(State &begin);
+// string factor(State &begin);
+void consume(State &begin, set<char> expected);
+
+class ParseError{};
+
+//四則演算の式を構文解析し評価結果を返す。
+string expression(State &begin){
+  string ret = "";
+    if(isdigit(*begin)){
+      ret = number(begin);
+    }else if(*begin == '+' or *begin == '*' or*begin == '-' or *begin == '/'){
+      ret = term(begin);
+    }
+    
+  return ret;
+}
+
+string term(State &begin){
+  string ret = "";
+  char mark = *begin;
+  consume(begin,{'*','+','-','/'});
+  consume(begin,{'('});
+  ret += '(';
+  for(;;){
+
+    if(*begin == ','){
+      ret += mark;
+      begin++;
+    }else if(*begin == ')'){
+      ret += ')';
+      begin++;
+      break;
+    }else{
+      ret += expression(begin);
+    }
+  }
+  return ret;
+}
+
+//数字の列を構文解析してその数を返す。
+string number(State &begin){
+  string ret = "";
+  while(isdigit(*begin)){
+    ret += *begin;
+    begin++;
+  }
+  return ret;
+}
+
+
+void consume(State &begin, set<char> expected){
+  if(expected.count(*begin)){
+    begin++;
+  }else{
+    cerr << "Expected ";
+    for(auto it = expected.begin();it != expected.end();it++){
+      if(it != expected.begin()){
+        cerr << " or ";
+      }
+      cerr <<"'" <<  *it  << "'";
+    }
+    
+    cout <<  " but got '" << *begin << "'" << endl;
+    cerr << "Rest string is '";
+    while(*begin){
+      cerr << *begin++;
+    }
+    cerr << "'" << endl;
+    throw ParseError();
+  }
+}
+
+
+ 
+int main(){
+  string s;cin >> s;
+  s += "=";//RE対策
+  State begin = s.begin();
+  string ans = expression(begin);
+  consume(begin,{'='});
+  cout << ans << endl;
+}
