@@ -1,0 +1,69 @@
+//観賞用
+class SWAG {
+  public:
+  struct ab{
+    ll a;
+    ll b;
+    ll fa;
+    ll fb;
+    ab(ll _a,ll _b,ll _fa,ll _fb){
+      a = _a;
+      b = _b;
+      fa = _fa;
+      fb = _fb;
+    } 
+  };
+  stack<ab> frontstack;
+  stack<ab> backstack;
+  ll mod = 998244353LL;
+  void push(ll a,ll b){
+    a %= mod;
+    b %= mod;
+    if(backstack.empty()){
+      backstack.push(ab(a,b,a,b));
+    }else{
+      ll last_fa = backstack.top().fa;
+      ll last_fb = backstack.top().fb;
+      backstack.push(ab(a,b,(last_fa * a) % mod,((last_fb * a) % mod + b) % mod));
+    }
+  }
+  void pop(){
+    if(!frontstack.empty()){
+      frontstack.pop();
+    }else{
+      while(!backstack.empty()){
+        auto [a,b,fa,fb] = backstack.top();
+        backstack.pop();
+        if(frontstack.empty()){
+          frontstack.push(ab(a,b,a,b));
+        }else{
+          ll last_fa = frontstack.top().fa;
+          ll last_fb = frontstack.top().fb;
+          ll last_a = frontstack.top().a;
+          ll last_b = frontstack.top().b;
+          frontstack.push(ab(a,b,(last_fa * a) % mod,((b * last_fa) % mod + last_fb) % mod));
+        }
+      }
+      frontstack.pop();
+    }
+  }
+  ll query(ll x){
+
+      if(frontstack.empty()){
+
+      }else{
+        x %= mod;
+        auto [c,d,fc,fd] = frontstack.top();
+        x = (((fc * x) % mod) + fd) % mod;
+      }
+      
+      if(backstack.empty()){
+        return x ;
+      }else{
+        x %= mod;
+        auto [a,b,fa,fb] = backstack.top();
+        return (((fa * x) % mod ) + fb) % mod;
+      }
+    
+  }
+};
