@@ -1,0 +1,129 @@
+typedef string::const_iterator State;
+
+class ParseError {};
+//プロトタイプ宣言
+void root(State &begin);
+ll expression(State &begin, ll before_id);
+ll number(State &begin, ll before_id);
+ll factor(State &begin,ll before_id);
+void consume(State &begin, char expected);
+void output_error(State &begin,char expected);
+
+struct node{
+  char ch;
+  vector<ll> to;
+};
+vector<node> nodes;
+
+void root(State &begin){
+  ll non_root_id = factor(begin,-1);
+  ll operator_id = -1;
+  ll cnt = 0;
+  char decided_operator;
+  
+  for(;;){
+    if(*begin == '+' || *begin == '-'){
+      if(cnt == 0){
+        decided_operator = *begin;
+        nodes.push_back({*begin,{}});
+        nodes[non_root_id].to.push_back(nodes.size()-1);
+        nodes[nodes.size()-1].to.push_back(non_root_id);
+        operator_id = nodes.size()-1;
+        cnt++;
+        begin++;
+        non_root_id = factor(begin,-1);
+      }else{
+        if(*begin != decided_operator){
+          output_error(begin,decided_operator);
+        }
+        if(cnt > 2){
+          cerr << "The number of non_root expressions is incorrect" << endl;
+          throw ParseError();
+        }
+        nodes[non_root_id].to.push_back(operator_id);
+        nodes[operator_id].to.push_back(non_root_id);
+        begin++;
+        cnt++;
+        non_root_id = factor(begin,-1);
+      }
+    }else {
+      nodes[non_root_id].to.push_back(operator_id);
+      nodes[operator_id].to.push_back(non_root_id);
+      break;
+    }
+  }
+  return ;
+}
+
+//四則演算の式を構文解析し評価結果を返す。
+//今回はroot式でない部分についての解析
+ll expression(State &begin,ll before_id){
+  ll ret = factor(begin,-1);
+  for(;;){
+    if(*begin == '+' || *begin == '-'){
+      nodes.push_back({*begin,{}});
+      nodes[ret].to.push_back(nodes.size()-1);
+      nodes[nodes.size()-1].to.push_back(ret);
+      ret = nodes.size()-1;
+      if(before_id != -1){
+        nodes[ret].to.push_back(before_id);
+        nodes[before_id].to.push_back(ret);
+      }
+      begin++;
+      factor(begin,ret);
+    }else {
+      break;
+    }
+  }
+  return ret;
+}
+
+
+//数字をnodeにしてそのindexを返す。
+//演算子の前ならbefore_id = -1,あとならbefore_id = (演算子のindex)
+ll number(State &begin, ll before_id){
+  ll ret = nodes.size();
+
+  if(!isdigit(*begin)){
+    output_error(begin, '1');//数字がきてほしいけど来なかった
+  }
+
+  nodes.push_back({*begin,{}});
+  if(before_id != -1){
+    nodes[ret].to.push_back(before_id);
+    nodes[before_id].to.push_back(ret);
+  }
+  begin++;
+  return ret;
+}
+
+//カッコが含まれるならそれを飛ばす処理を行う
+//演算子の前ならbefore_id = -1,あとならbefore_id = (演算子のindex)
+ll factor(State &begin,ll before_id){
+  if(*begin == '('){
+    consume(begin,'(');
+    ll ret = expression(begin,before_id);
+    consume(begin,')');
+    return ret;
+  }else {
+    return number(begin,before_id);
+  }
+}
+
+void consume(State &begin, char expected){
+  if(*begin == expected){
+    begin++;
+  }else{
+    output_error(begin,expected);
+  }
+}
+
+void output_error(State &begin,char expected){
+  cerr << "Expected '" << expected << "' but got '" << *begin << "'" << endl;
+  cerr << "Rest string is '";
+  while(*begin){
+    cerr << *begin++;
+  }
+  cerr << "'" << endl;
+  throw ParseError();
+}
