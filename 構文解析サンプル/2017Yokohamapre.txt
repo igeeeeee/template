@@ -1,0 +1,163 @@
+#include <bits/stdc++.h>
+using namespace std;
+#define ll long long
+#define rep(i,n) for(long long i = 0;i < (long long)(n);i++)
+
+typedef string::const_iterator State;
+class ParseError {};
+ll winner(State &begin);
+ll person(State & begin);
+void consume(State &begin,char expected);
+
+struct node{
+  char ch;
+  vector<ll> to;
+};
+
+vector<node> nodes;
+map<char,ll> alp_place;
+
+ll winner(State &begin){
+  if(*begin == '['){
+    consume(begin,'[');
+    ll right = winner(begin);
+
+    consume(begin,'-');
+    nodes.push_back({'-',{}});
+    ll ret = nodes.size()-1;
+
+    ll left = winner(begin);
+    consume(begin,']');
+
+    nodes[ret].to.push_back(right);
+    nodes[ret].to.push_back(left);
+    nodes[left].to.push_back(ret);
+    nodes[right].to.push_back(ret);
+    return ret;
+  }else{
+    return person(begin);
+  }
+
+}
+
+ll person(State &begin){
+  if(islower(*begin)){
+    nodes.push_back({*begin,{}});
+    alp_place[*begin] = nodes.size()-1;
+    begin++;
+    return nodes.size()-1;
+  }else{
+    cerr << "Expected " << "alphabet " << " but got " <<*begin << endl;
+    cerr << "Rest string is " ;
+    while(*begin){
+      cerr <<*begin++;
+    } 
+    cerr << endl;
+    throw ParseError();
+  }
+}
+
+
+void consume(State &begin,char expected){
+  if(*begin == expected){
+    begin++;
+  }else{
+    cerr << "Expected " << expected << " but got " <<*begin << endl;
+    cerr << "Rest string is " ;
+    while(*begin){
+      cerr <<*begin++;
+    } 
+    cerr << endl;
+    throw ParseError();
+  }
+}
+
+
+int main(){
+  string s;cin >> s;
+  s += "=";
+  State begin =  s.begin();
+  ll root = winner(begin);
+  consume(begin,'=');
+  // for(auto &p:nodes){
+  //   cout << p.ch << " ";
+  //   for(auto &q:p.to){
+  //     cout << q << " ";
+  //   }
+  //   cout << endl;
+  // }
+  map<char,ll> mp;
+  rep(i,alp_place.size()){
+    char a;cin >> a;
+    ll v;cin >> v;
+    mp[a] = v;
+  }
+
+  vector<ll> parent(nodes.size(),-2);
+  parent[root] = -1;
+  queue<ll> que;
+  queue<ll>  scan_que;
+  que.push(root);
+  while(!que.empty()){
+    ll now = que.front();
+    que.pop();
+    bool no_minus_in_child = true;
+    for(auto &p:nodes[now].to){
+      if(parent[p] != -2)continue;
+      if(nodes[p].ch == '-'){
+        no_minus_in_child = false;
+        parent[p] = now;
+        que.push(p);
+      }
+    }
+    if(no_minus_in_child){
+      scan_que.push(now);
+    }
+  }
+
+  vector<ll> rest_win(nodes.size(),-2);
+  for(auto &p:mp){
+    rest_win[alp_place[p.first]] = p.second;
+  }
+  bool able = true;
+
+  while(!scan_que.empty()){
+    ll now = scan_que.front();
+    scan_que.pop();
+    if(rest_win[now] != -2)continue;
+    vector<ll> child_val;
+    for(auto &p:nodes[now].to){
+      if(p == parent[now])continue;
+      if(rest_win[p] == -2){
+        scan_que.push(now);
+        goto next;
+      }
+      child_val.push_back(rest_win[p]);
+    }
+
+    if(now == root){
+      if(min(child_val[0],child_val[1]) == 0 && max(child_val[0],child_val[1]) ==1){
+        //ok
+      }else{
+        able = false;
+      }
+
+      break;
+    }else{
+
+      if(min(child_val[0],child_val[1]) == 0 && max(child_val[0],child_val[1]) > 0){
+        //ok
+        rest_win[now] = max(child_val[0],child_val[1]) -1;
+        scan_que.push(parent[now]);
+      }else{
+        able = false;
+        break;
+      }
+
+    }
+    next:
+      continue;
+  }
+  if(able)cout << "Yes" << endl;
+  else cout << "No" << endl;
+}
