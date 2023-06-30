@@ -1,0 +1,59 @@
+//負の閉検出、負の辺ありで単一始点最短経路
+
+struct Edge{
+	ll from;
+	ll to;
+	ll cost;
+};
+
+// 負の閉路が存在する場合 true を返し, 負閉路の影響を受ける頂点は -INF にセットされる
+// dist は頂点数と同じサイズ, 全要素 INF で初期化しておく
+// startからgoalの経路知りたいときは適宜変更
+bool BellmanFord(vector<Edge> &edges,vector<ll> &dist,ll start,ll goal = -1){
+	dist[start] = 0;
+
+	vector<ll> parent(dist.size(),-1);
+	
+	rep(i,dist.size()){
+		bool changed = false;
+		for(auto &p:edges){
+			if(dist[p.from] == INF){
+				continue;
+			}
+			if(dist[p.from] + p.cost < dist[p.to]){
+				dist[p.to] = dist[p.from] + p.cost;
+				parent[p.to] = p.from;//直前の頂点を記憶
+				changed = true;
+			}
+		}
+
+		//頂点の更新がなくなったら終了
+		if(changed == false){
+			return false;
+		}
+	}	
+
+	//頂点数だけ更に繰り返して負の閉路を受ける点を-INFにしていく
+	rep(i,dist.size()){
+		for(auto &p:edges){
+			if(dist[p.from] == INF){
+				continue;
+			}
+			//まだ更新されるってことは負の閉路の影響をうけて無限に小さくなってしまう
+			if(dist[p.from] + p.cost < dist[p.to]){
+				dist[p.to] = -INF;
+			}
+		}
+	}
+	vector<ll> ret;
+	if(goal != -1 && dist[goal] != INF && dist[goal] != -INF){
+		for(ll i = goal;i != -1;i = parent[i]){
+			ret.push_back(i);
+		}
+	}
+	reverse(all(ret));
+	//必要ならretを出力してstartからgoalまでの経路を出力する
+
+
+	return true;
+}
