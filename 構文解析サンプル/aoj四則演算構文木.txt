@@ -1,0 +1,214 @@
+#include <bits/stdc++.h>
+using namespace std;
+typedef long long ll;
+#define rep(i,n) for(long long i = 0;i < (long long)(n);i++)
+
+typedef string::const_iterator State;
+
+class ParseError {};
+
+ll expression(State &begin);
+ll term(State &begin);
+ll number(State &begin);
+ll factor(State &begin);
+void consume(State &begin,char expected);
+struct node{
+	string ch; // charがいいときもある
+	vector<ll> to;
+};
+vector<node>nodes;
+
+//四則演算の式を構文解析し評価結果を返す。
+ll expression(State &begin){
+   ll ret = term(begin);
+  for(;;){
+    if(*begin == '+'){
+			ll before = ret;
+			ret = nodes.size();
+			nodes.push_back({"+",{}});
+      begin++;
+      ll after = term(begin);
+			if(before != -1){
+				nodes[ret].to.push_back(before);
+				nodes[before].to.push_back(ret);
+			}
+			nodes[ret].to.push_back(after);
+			nodes[after].to.push_back(ret);
+
+    }else if(*begin == '-'){
+			ll before = ret;
+			ret = nodes.size();
+			nodes.push_back({"-",{}});
+      begin++;
+      ll after = term(begin);
+			if(before != -1){
+				nodes[ret].to.push_back(before);
+				nodes[before].to.push_back(ret);
+			}
+			nodes[ret].to.push_back(after);
+			nodes[after].to.push_back(ret);
+    }else {
+      break;
+    }
+  }
+  return ret;
+}
+
+// 乗除算の式を構文解析し評価結果を返す。
+ll term(State &begin){
+  ll ret = factor(begin);
+
+  for(;;){
+    if(*begin == '*'){
+      ll before = ret;
+			ret = nodes.size();
+			nodes.push_back({"*",{}});
+      begin++;
+      ll after = factor(begin);
+			if(before != -1){
+				nodes[ret].to.push_back(before);
+				nodes[before].to.push_back(ret);
+			}
+			nodes[ret].to.push_back(after);
+			nodes[after].to.push_back(ret);
+    }else if(*begin == '/'){
+      ll before = ret;
+			ret = nodes.size();
+			nodes.push_back({"/",{}});
+      begin++;
+      ll after = factor(begin);
+			if(before != -1){
+				nodes[ret].to.push_back(before);
+				nodes[before].to.push_back(ret);
+			}
+			nodes[ret].to.push_back(after);
+			nodes[after].to.push_back(ret);
+    }else{
+      break;
+    }
+  }
+  return ret;
+}
+
+//数字の列を構文解析して配列上の番地を返す。
+ll number(State &begin){
+  ll val = 0;
+	if(!isdigit(*begin)){
+		return -1;
+	}
+  while(isdigit(*begin)){
+    val *= 10;
+    val += *begin - '0';
+    begin++;
+  }
+
+	ll ret = nodes.size();
+	nodes.push_back({to_string(val),{}});
+  return ret;
+}
+
+//カッコが含まれるならそれを飛ばす処理を行う
+ll factor(State &begin){
+  if(*begin == '('){
+    consume(begin,'(');
+    ll ret = expression(begin);
+    consume(begin,')');
+    return ret;
+  }else {
+    return number(begin);
+  }
+}
+
+void consume(State &begin, char expected){
+  if(*begin == expected){
+    begin++;
+  }else{
+    cerr << "Expected '" << expected << "' but got '" << *begin << "'" << endl;
+    cerr << "Rest string is '";
+    while(*begin){
+      cerr << *begin++;
+    }
+    cerr << "'" << endl;
+    throw ParseError();
+  }
+}
+
+
+ll dfs(ll id,vector<ll> &found){
+  found[id] = 1;
+  if(isdigit(nodes[id].ch[0])){
+    return stoll(nodes[id].ch);
+  }
+  bool first_val = true;
+  ll ans ;
+  if(nodes[id].ch == "-"){
+    ll child_cnt = 0;
+    for(auto &p:nodes[id].to){
+      if(found[p] == 0){
+        child_cnt++;
+      }
+    }
+    if(child_cnt == 1){
+      for(auto &p:nodes[id].to){
+        if(found[p] == 0){
+          ans = -dfs(p,found);
+        }
+      }
+    }else{
+      for(auto &p:nodes[id].to){
+        if(found[p] == 0){
+          ll val = dfs(p,found);
+          if(first_val){
+            ans = val;
+            first_val = false;
+          }else{
+            ans -=val;
+          }
+        }
+      }
+    }
+    return ans;
+  }
+  for(auto &p:nodes[id].to){
+    if(found[p] == 0){
+      ll val = dfs(p,found);
+      if(first_val){
+        ans = val;
+        first_val = false;
+      }else{
+        if(nodes[id].ch == "+"){
+          ans += val;
+        }else if(nodes[id].ch == "*"){
+          ans *=val;
+        }else if(nodes[id].ch == "/"){
+          ans /=val;
+        }
+      }
+    }
+  }
+  return ans;
+  
+}
+
+int main(){
+  ll n;cin >> n;
+  cin.ignore();
+  rep(i,n){
+    string s;
+    getline(cin,s);
+    State begin = s.begin();
+    ll root = expression(begin);
+    consume(begin,'=');
+    // for(auto &p:nodes){
+		// 	cout << p.ch << " : ";
+		// 	for(auto &q:p.to){
+		// 		cout << q << " ";
+		// 	} 
+		// 	cout << endl;
+		// }
+    vector<ll> found(nodes.size());
+
+    cout << dfs(root,found) << endl;
+    nodes.clear();
+  }
+}
