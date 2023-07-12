@@ -19,6 +19,7 @@ mint nCr(ll n,ll r){
 
 
 //最強,前処理(n), 計算(1)
+//n,k <= 10^7の時
 const ll MOD = 998244353;
 vector<long long> fact, fact_inv, inv;
 /*  init_nCk :二項係数のための前処理
@@ -33,8 +34,8 @@ void init_nCk(ll SIZE) {
     inv[1] = 1;
     for (int i = 2; i < SIZE + 5; i++) {
         fact[i] = fact[i - 1] * i % MOD;
-        inv[i] = MOD - inv[MOD % i] * (MOD / i) % MOD;
-        fact_inv[i] = fact_inv[i - 1] * inv[i] % MOD;
+        inv[i] = MOD - inv[MOD % i] * (MOD / i) % MOD;//iの逆元
+        fact_inv[i] = fact_inv[i - 1] * inv[i] % MOD;//i!の逆元
     }
 }
 /*  nCk :MODでの二項係数を求める(前処理 int_nCk が必要)
@@ -44,6 +45,120 @@ long long nCk(ll n, ll k) {
     assert(!(n < k));
     assert(!(n < 0 || k < 0));
     return fact[n] * (fact_inv[k] * fact_inv[n - k] % MOD) % MOD;
+}
+
+
+
+
+
+/*
+k <= 10^7 n<= 10^9の時
+nが固定でない時
+*/
+ll MOD = 1e9+ 7;
+vector<ll> fact_inv,inv;
+
+/*  init_nCk :二項係数のための前処理
+    計算量:O(k)
+*/
+void init_nCk(ll siz){
+	fact_inv.resize(siz + 5);
+	inv.resize(siz +5);
+	fact_inv[0] = 1;
+	fact_inv[1] = 1;
+	inv[1] = 1;
+	for(ll i = 2;i < siz +5;i++){
+		inv[i] = MOD - inv[MOD%i] * (MOD/i) % MOD;
+		fact_inv[i] = fact_inv[i-1] * inv[i] % MOD;
+	}
+}
+/*  nCk :MODでの二項係数を求める(前処理 init_nCk が必要)
+    計算量:O(k)
+		n/1 * (n-1)/2 * ... *(n-k+1)/kを計算する
+*/
+ll nCk(ll n,ll k){
+	assert(!(n < k));
+  assert(!(n < 0 || k < 0));
+	ll ans = 1;
+	for(ll i = n;i >= n-k+1;i--){
+		ans *= i;
+		ans %= MOD;
+	}
+	return ans * fact_inv[k] % MOD;
+}
+
+
+
+
+/*
+k <= 10^7 n<= 10^9の時
+nが固定の時
+*/
+ll MOD = 1e9+ 7;
+
+//fact_inv: i!の逆元
+//inv     : iの逆元
+//Com			: nCiの答え
+vector<ll> fact_inv,inv,Com;
+
+/*  init_nCk :二項係数のための前処理
+    計算量:O(k)
+*/
+void init_nCk(ll n,ll siz){
+	fact_inv.resize(siz + 5);
+	inv.resize(siz +5);
+	fact_inv[0] = 1;
+	fact_inv[1] = 1;
+	inv[1] = 1;
+	for(ll i = 2;i < siz +5;i++){
+		inv[i] = MOD - inv[MOD%i] * (MOD/i) % MOD;
+		fact_inv[i] = fact_inv[i-1] * inv[i] % MOD;
+	}
+	Com.resize(siz + 5);
+	Com[0] = 1;
+	//n/1 * (n-1)/2 * ... *(n-k+1)/kを計算する
+	for(ll i = 1;i < siz + 5;i++){
+		Com[i] = Com[i-1] *((n-i+1) *inv[i] % MOD)%MOD;
+	}
+}
+/*  nCk :MODでの二項係数を求める(前処理 init_nCk が必要)
+    計算量:O(1)
+*/
+ll nCk(ll k){
+	assert(!(k < 0));
+	return Com[k];
+}
+
+
+
+/*
+MODが素数でない時も使える
+k,n <= 5000
+nCk = (n-1)C(k-1) + (n-1)Ckを利用したDP
+*/
+const int MAX_N = 5000;
+const long long MOD = 1000000007;
+long long Com[MAX_N][MAX_N];
+/* init_nCk:二項係数のための前処理
+    計算量:O(MAX_N*MAX_N)
+*/
+void init_nCk() {
+    memset(Com, 0, sizeof(Com));
+    Com[0][0] = 1;
+    for (int i = 1; i < MAX_N; ++i) {
+        Com[i][0] = 1;
+        for (int j = 1; j < MAX_N; j++) {
+            Com[i][j] = (Com[i - 1][j - 1] + Com[i - 1][j]) % MOD;
+        }
+    }
+}
+/*  nCk :MODでの二項係数を求める(前処理 int_nCk が必要)
+    計算量:O(1)
+*/
+long long nCk(int n, int k) {
+    assert(!(n < k));
+    assert(!(n < 0 || k < 0));
+    return Com[n][k];
 }
 
 
