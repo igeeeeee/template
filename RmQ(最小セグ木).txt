@@ -1,0 +1,49 @@
+class SegmentTree{
+  public:
+  vector<ll> tree;
+  ll siz = 0;
+  SegmentTree(ll n){
+    ll i = 0;
+    while((1 << i) < n ){
+      i++;
+    }
+    tree.resize(1<<(i+1),INF);
+    siz = 1 << i;
+  }
+
+  void init(ll n){
+    ll i = 0;
+    while((1 << i) < n ){
+      i++;
+    }
+    tree.resize(1<<(i+1),INF);
+    siz = 1 << i;
+  }
+  
+  void update(ll pos, ll x){
+    pos = pos + siz-1;
+    tree[pos] = x;
+    while(pos >= 1){
+      pos = (pos-1)/2;
+      tree[pos] = min(tree[2 * pos +1], tree[2 * (pos+1)]);
+    }
+  }
+
+  //[l,r) について、最初はa = 0,b = (SegmentTree).siz, p = 0 にしておく 
+  ll query(ll l, ll r, ll a, ll b, ll p){
+    if(r <= a or l >= b){
+      return INF;
+    }
+    if(l <= a and b <= r){
+      return tree[p];
+    }
+    ll m = (a + b)/2;
+    ll ansr = query(l,r,a,m,2 * p+1);
+    ll ansl = query(l,r,m,b,2 * (p+1));
+    return min(ansr,ansl);
+  }
+  
+  ll at(ll pos){
+    return tree[pos + siz -1]; 
+  }
+};
