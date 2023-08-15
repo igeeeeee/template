@@ -1,0 +1,103 @@
+using P = pair<ll,ll>;
+
+template <class T>
+class SegmentTree{
+  public:
+  vector<T> tree;
+  ll siz = 0;
+  T e; //単位元 初期化に使われるやつ
+  function<T(T,T)> op;
+  function<T(T,T)> mapping = [](T a,T b){return b;};//更新に使用 デフォルトはただ更新
+
+  //とりあえず定義したい時用
+  SegmentTree():e(0),op([](T a,T b){return 0;}){
+    tree.resize(1 << 1,0);
+    siz = 1 << 0;
+  }
+  
+  SegmentTree(ll n,T _e,function<T(T,T)> _op):e(_e),op(_op){
+    ll i = 0;
+    while((1 << i) < n ){
+      i++;
+    }
+    tree.resize(1<<(i+1),_e);
+    siz = 1 << i;
+  }
+
+  //更新も工夫したいやつ
+  SegmentTree(ll n,T _e,function<T(T,T)> _op,function<T(T,T)>_mapping):e(e),op(_op),mapping(_mapping){
+    ll i = 0;
+    while((1 << i) < n ){
+      i++;
+    }
+    tree.resize(1<<(i+1),_e);
+    siz = 1 << i;
+  }
+  
+  void update(ll pos, T x){
+    pos = pos + siz-1;
+    tree[pos] = mapping(tree[pos],x);
+    while(pos >= 1){
+      pos = (pos-1)/2;
+      tree[pos] = op(tree[2 * pos +1], tree[2 * (pos+1)]);
+    }
+  }
+
+  //[l,r) について、最初はa = 0,b = (SegmentTree).siz, p = 0 にしておく 
+  T _query(ll l, ll r, ll a, ll b, ll p){
+    if(r <= a or l >= b){
+      return e;
+    }
+    if(l <= a and b <= r){
+      return tree[p];
+    }
+    ll m = (a + b)/2;
+    T ansr = _query(l,r,a,m,2 * p+1);
+    T ansl = _query(l,r,m,b,2 * (p+1));
+    return op(ansr,ansl);
+  }
+
+  //query呼び出し用[l,r)
+  T query(ll l,ll r){
+    return _query(l,r,0,siz,0);
+  }
+
+  T operator[](ll pos){
+    return tree[pos + siz -1];
+  }
+  
+};
+
+vector<pair<ll,ll>> euler_tour;//dfsしたときに現れる頂点の(深さ、頂点番号)
+vector<ll> first_appear;//頂点vがeulertour上で初めて現れるndex
+
+//木をdfsしてeuler_tourとfirst_appearを埋める
+void dfs_euler(vector<vector<ll>> &g,ll v,vector<ll> &depth){
+  first_appear[v] = euler_tour.size();
+  euler_tour.push_back({depth[v],v});
+  for(auto &p:g[v]){
+    if(depth[p] == INF){
+      depth[p] = depth[v] + 1;
+      dfs_euler(g,p,depth);
+      euler_tour.push_back({depth[v],v});
+    }
+  }
+}
+
+//euler_tourの情報をSeg木に乗せるだけ
+void seg_euler_setup(SegmentTree<P> &seg_euler){
+  ll siz = euler_tour.size();
+  rep(i,siz){
+    seg_euler.update(i,euler_tour[i]);
+  }
+}
+
+// main関数内
+
+  first_appear.resize(n,INF);
+  vector<ll> depth(n,INF);
+  //木の始点の距離を0にしておく
+  depth[0] = 0;
+  dfs_euler(g,0,depth);
+  SegmentTree<P> seg_euler((ll)euler_tour.size(),{INF,INF},[](P a,P b){return min(a,b) == a ? a : b;});
+  seg_euler_setup(seg_euler);
