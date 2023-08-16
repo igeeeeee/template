@@ -94,6 +94,7 @@ void seg_euler_setup(SegmentTree<P> &seg_euler){
 
 // main関数内
 
+/*
   first_appear.resize(n,INF);
   vector<ll> depth(n,INF);
   //木の始点の距離を0にしておく
@@ -101,3 +102,8 @@ void seg_euler_setup(SegmentTree<P> &seg_euler){
   dfs_euler(g,0,depth);
   SegmentTree<P> seg_euler((ll)euler_tour.size(),{INF,INF},[](P a,P b){return min(a,b) == a ? a : b;});
   seg_euler_setup(seg_euler);
+
+  // x,yのLCA求めるときは({深さ,頂点番号})
+  seg_euler.query(min(first_appear[x],first_appear[y]),max(first_appear[x],first_appear[y])+1);
+
+*/
