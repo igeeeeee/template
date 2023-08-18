@@ -1,0 +1,33 @@
+//隣接リストgを利用,n頂点
+  auto topological_sort = [](vector<vector<ll>> &g,ll n){
+  vector<ll> topological_order;
+
+    vector<ll> in_cnt(n);//入次数
+    rep(i,n){
+      for(ll p : g[i]){
+        in_cnt[p]++;
+      }
+    }
+    queue<ll> que;
+    //始点入れる
+    rep(i,n){
+      if(in_cnt[i] == 0){
+        que.push(i);
+      }
+    }
+
+    while(!que.empty()){
+      ll now  = que.front();
+      que.pop();
+      topological_order.push_back(now);
+      for(ll p :g[now]){
+        if(in_cnt[p] > 0){
+          in_cnt[p]--;
+          if(in_cnt[p] == 0){
+            que.push(p);
+          }
+        }
+      }
+    }
+    return topological_order;
+  };
