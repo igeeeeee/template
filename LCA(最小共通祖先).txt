@@ -25,7 +25,7 @@ class SegmentTree{
   }
 
   //更新も工夫したいやつ
-  SegmentTree(ll n,T _e,function<T(T,T)> _op,function<T(T,T)>_mapping):e(e),op(_op),mapping(_mapping){
+  SegmentTree(ll n,T _e,function<T(T,T)> _op,function<T(T,T)>_mapping):e(_e),op(_op),mapping(_mapping){
     ll i = 0;
     while((1 << i) < n ){
       i++;
