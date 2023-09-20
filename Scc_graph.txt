@@ -1,0 +1,63 @@
+struct Scc_graph{
+  vector<vector<ll>> g;
+  ll _n;
+
+  Scc_graph(ll n): _n(n){
+    g.resize(n);
+  }
+
+  void add_edge(ll from,ll to){
+    assert(0 <= from && from < _n);
+    assert(0 <= to && to < _n);
+    g[from].push_back(to);
+  }
+
+  vector<vector<ll>> scc(){
+    ll now_ord = 0,group_num = 0;//dfs行きかけで発見した頂点数、グループの数
+    vector<ll> visited;//発見したけどまだグループ分けされてない頂点
+    vector<ll> low(_n);//lowlink
+    vector<ll> ord(_n,-1);//order何番目に発見したか
+    vector<ll> ids(_n);//groupidが振られる
+
+    auto dfs = [&](auto dfs,ll v)-> void{
+      ord[v] = now_ord;
+      low[v] = now_ord;
+      now_ord++;
+      visited.push_back(v);
+      for(auto &p:g[v]){
+        if(ord[p] == -1){
+          dfs(dfs,p);
+          low[v] = min(low[v],low[p]);
+        }else{
+          low[v] = min(low[v],ord[p]);//ord[p] == _nならグループに分けられてる
+        }
+      }
+      if(low[v] == ord[v]){
+        //scc_rootだった
+        while(true){
+          ll u = visited.back();
+          visited.pop_back();
+          ord[u] = _n;//グループに分けられた  
+          ids[u] = group_num;
+          if(u == v)break;
+        }
+        group_num++;
+      } 
+    };
+    rep(i,_n){
+      if(ord[i] == -1){
+        dfs(dfs,i);
+      }
+    }
+    //group番号を逆順にする
+    for(auto &p:ids){
+      p = group_num - 1 - p;
+    }
+    vector<vector<ll>> groups(group_num);
+    rep(i,_n){
+      groups[ids[i]].push_back(i);
+    }
+    return groups;
+  }
+
+};
