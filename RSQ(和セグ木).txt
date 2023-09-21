@@ -29,7 +29,7 @@ class SegmentTree{
     }
   }
   //[l,r) について、最初はa = 0,b = (SegmentTree).siz, p = 0 にしておく
-  ll query(ll l, ll r, ll a, ll b, ll p){
+  ll _query(ll l, ll r, ll a, ll b, ll p){
     if(r <= a or l >= b){
       return 0;
     }
@@ -37,12 +37,16 @@ class SegmentTree{
       return tree[p];
     }
     ll m = (a + b)/2;
-    ll ansr = query(l,r,a,m,2 * p+1);
-    ll ansl = query(l,r,m,b,2 * (p+1));
+    ll ansr = _query(l,r,a,m,2 * p+1);
+    ll ansl = _query(l,r,m,b,2 * (p+1));
     return ansr + ansl;
   }
 
-  ll at(ll pos){
-    return tree[pos + siz -1]; 
+  ll query(ll l ,ll r){
+    return _query(l,r,0,siz,0);
+  }
+
+  ll operator[](ll pos){
+    return tree[pos + siz -1];
   }
 };
