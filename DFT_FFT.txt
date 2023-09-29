@@ -1,0 +1,64 @@
+vector<complex<ld>> DFT(vector<complex<ld>> a){
+  ll n = a.size();
+  vector<complex<ld>> b(n);
+  rep(i,n){
+    rep(j,n){
+      b[i] += a[j] * polar((ld)1,2 * (ld)M_PI * i * j/n);
+    }
+  }
+  return b;
+}
+
+vector<complex<ld>> IDFT(vector<complex<ld>> b){
+  ll n = b.size();
+  vector<complex<ld>> a(n);
+  rep(i,n){
+    rep(j,n){
+      a[i] += b[j] * polar((ld)1,-2 * (ld)M_PI * i * j/n);
+    }
+  }
+  rep(i,n){
+    a[i] /=(ld)n;
+  }
+  return a;
+}
+
+vector<complex<ld>> FFT(vector<complex<ld>> a){
+  ll n = a.size();
+  if(n == 1)return a;
+  vector<complex<ld>> even(n/2),odd(n/2);//2べきなので必ず割り切れる
+  rep(i,n/2){
+    even[i] = a[i * 2];
+    odd[i] = a[i * 2 +1];
+  }
+  even = FFT(even);
+  odd = FFT(odd);
+  rep(i,n/2){
+    odd[i] *= polar((ld)1,2 * (ld)M_PI * i/n);
+    a[i] = even[i] + odd[i];
+    a[n/2 + i] = even[i] - odd[i];
+  }
+  return a;
+}
+
+vector<complex<ld>> IFFT(vector<complex<ld>> b){
+  ll n = b.size();
+  if(n == 1)return b;
+  vector<complex<ld>> even(n/2),odd(n/2);
+  rep(i,n/2){
+    even[i] = b[2 * i];
+    odd[i] = b[2 * i + 1];
+  }
+  even = FFT(even);
+  odd = FFT(odd);
+  rep(i,n/2){
+    odd[i] *= polar((ld)1,-2 * (ld)M_PI*i/n);
+    b[i] = even[i] + odd[i];
+    b[n/2 + i] = even[i] -odd[i];
+  }
+  rep(i,n){
+    b[i]/= (ld)n;
+  }
+  return b;
+}
+ 

@@ -1,14 +1,13 @@
-ll ng = -1;
-ll ok = n; //配列サイズ
-while(ok-ng > 1){
+ll ng = -1; //条件を満たさない値
+ll ok = n; //条件を満たす値
+while(abs(ok-ng) > 1){
   ll mid = (ok + ng)/2;
-  if(s[mid] >= num){
+  if(f(mid)){
     ok = mid;
   }else{
     ng = mid;
   }
 }
 
-//上 実質的lower_bound(), >= を > でupper_bound()にできる
 
 
