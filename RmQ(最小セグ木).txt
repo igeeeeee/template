@@ -38,9 +38,9 @@ class SegmentTree{
       return tree[p];
     }
     ll m = (a + b)/2;
-    ll ansr = _query(l,r,a,m,2 * p+1);
-    ll ansl = _query(l,r,m,b,2 * (p+1));
-    return min(ansr,ansl);
+    ll ansl = _query(l,r,a,m,2 * p+1);
+    ll ansr = _query(l,r,m,b,2 * (p+1));
+    return min(ansl,ansr);
   }
   
   ll query(ll l ,ll r){

@@ -50,9 +50,9 @@ class SegmentTree{
       return tree[p];
     }
     ll m = (a + b)/2;
-    T ansr = _query(l,r,a,m,2 * p+1);
-    T ansl = _query(l,r,m,b,2 * (p+1));
-    return op(ansr,ansl);
+    T ansl = _query(l,r,a,m,2 * p+1);
+    T ansr = _query(l,r,m,b,2 * (p+1));
+    return op(ansl,ansr);
   }
 
   //query呼び出し用[l,r)
