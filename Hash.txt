@@ -45,7 +45,8 @@ ulong SuperMODpow(ll x,ll n){
 }
  
 
-//main
+/*
+  //main
   vector<ll> hash(n+1,0);
   //Hashの計算累積和的に,Hash[i] = [0,i)の半開で持つ
   rep(i,n){
@@ -58,4 +59,4 @@ ulong SuperMODpow(ll x,ll n){
     ulong l = CalcMod(hash[d+1]+ POSITIVIZER - Mul(hash[c],SuperMODpow(100,d+1-c)));
     // f,lはPOSITIVIZERを足したことで負にならない
   }
-  
+*/
