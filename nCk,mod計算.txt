@@ -1,6 +1,6 @@
 ll M = 1000000007;
 //M適宜変更
-mint nCr(ll n,ll r){
+mint nCk(ll n,ll r){
   mint a = 1;
   repsn(i,1,n){
     a *= i;
