@@ -40,6 +40,7 @@
 			"//grid探索用",
 			"vector<ll> _ta = {0,0,1,-1,1,1,-1,-1};",
 			"vector<ll> _yo = {1,-1,0,0,1,-1,1,-1};",
+			"bool isin(ll x,ll y,ll h,ll w){return (0<=x && x < h && 0 <= y && y < w);}",
 			"  ",
 			"ll lpow(ll x,ll n){ll ans = 1;while(n >0){if(n & 1)ans *= x;x *= x;n >>= 1;}return ans;}",
 			"ll Modlpow(ll x,ll n,ll m){ll ans = 1;ll a = x;while(n >0){if(n & 1){ans *= a;ans%= m;}a *= a;a %= m;n >>= 1;}return ans;} ",
@@ -90,6 +91,7 @@
 			"//grid探索用",
 			"vector<ll> _ta = {0,0,1,-1,1,1,-1,-1};",
 			"vector<ll> _yo = {1,-1,0,0,1,-1,1,-1};",
+			"bool isin(ll x,ll y,ll h,ll w){return (0<=x && x < h && 0 <= y && y < w);}",
 			"  ",
 			"ll lpow(ll x,ll n){ll ans = 1;while(n >0){if(n & 1)ans *= x;x *= x;n >>= 1;}return ans;}",
 			"ll Modlpow(ll x,ll n,ll m){ll ans = 1;ll a = x;while(n >0){if(n & 1){ans *= a;ans%= m;}a *= a;a %= m;n >>= 1;}return ans;} ",
@@ -1453,10 +1455,19 @@
 		],
 		"description": "template for LazySegmentTree"
 	},
-
-
-
-
-
+	"テスト作成" : {
+		"prefix": "Maketest",
+		"body": [
+			"//参照渡しで値を作成して渡す",
+			"void Maketest(ll n){",
+			"	random_device seed_gen;",
+			"  mt19937_64 rnd(seed_gen());",
+			"  ",
+			"  uniform_int_distribution<int> dist_N(4, 10);",
+			"  n = dist_N(rnd);",
+			"}"
+		],
+		"description": "template for test"
+	},
 	
 }
