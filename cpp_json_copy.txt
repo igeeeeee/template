@@ -1459,11 +1459,12 @@
 		"prefix": "Maketest",
 		"body": [
 			"//参照渡しで値を作成して渡す",
-			"void Maketest(ll n){",
+			"void Maketest(ll &n){",
+			"//配列を渡すときは最初に.clear()をしておく",
 			"	random_device seed_gen;",
 			"  mt19937_64 rnd(seed_gen());",
 			"  ",
-			"  uniform_int_distribution<int> dist_N(4, 10);",
+			"  uniform_int_distribution<int> dist_N(1, 10);",
 			"  n = dist_N(rnd);",
 			"}"
 		],
