@@ -21,6 +21,7 @@
 			"typedef long double ld;",
 			"typedef vector<long long> vll;",
 			"typedef vector<vector<long long>> vvll;",
+			"typedef set<ll> sll;",
 			"typedef map<long long , long long> mpll;",
 			"typedef pair<long long ,long long> pll;",
 			"typedef tuple<long long , long long , long long> tpl3;",
@@ -33,7 +34,8 @@
 			"// << std::fixed << std::setprecision(10)",
 			"const ll INF = 1LL << 60;",
 			" ",
-			"inline ll popcnt(ull a){ return __builtin_popcountll(a); }",
+			"inline ll positive_mod(ll a,ll m){return (a % m + m)%m;}",
+			"inline ll popcnt(ull a){ return __builtin_popcountll(a);}",
 			"template<class T> bool chmin(T& a, T b){if(a > b){a = b;return true;}return false;}",
 			"template<class T> bool chmax(T& a, T b){if(a < b){a = b;return true;}return false;}",
 			"template<class... T>void input(T&... a){(cin >> ... >> a);}",
@@ -72,6 +74,7 @@
 			"typedef long double ld;",
 			"typedef vector<long long> vll;",
 			"typedef vector<vector<long long>> vvll;",
+			"typedef set<ll> sll;",
 			"typedef map<long long , long long> mpll;",
 			"typedef pair<long long ,long long> pll;",
 			"typedef tuple<long long , long long , long long> tpl3;",
@@ -84,7 +87,8 @@
 			"// << std::fixed << std::setprecision(10)",
 			"const ll INF = 1LL << 60;",
 			" ",
-			"inline ll popcnt(ull a){ return __builtin_popcountll(a); }",
+			"inline ll positive_mod(ll a,ll m){return (a % m + m)%m;}",
+			"inline ll popcnt(ull a){ return __builtin_popcountll(a);}",
 			"template<class T> bool chmin(T& a, T b){if(a > b){a = b;return true;}return false;}",
 			"template<class T> bool chmax(T& a, T b){if(a < b){a = b;return true;}return false;}",
 			"template<class... T>void input(T&... a){(cin >> ... >> a);}",
@@ -198,8 +202,8 @@
 		],
 		"description": "template for 時間計測"
 	},
-	"MaximamFlow" : {
-		"prefix": "Flow",
+	"MaximumFlow" : {
+		"prefix": "MaximumFlow",
 		"body": [
 			"struct Edge {",
 			"	ll to,cap,rev;",
@@ -358,7 +362,7 @@
 		"description": "template for topologicalsort"
 	},
 	"Dijecstra" : {
-		"prefix": "Daikusutora",
+		"prefix": "Daijecstra",
 		"body": [
 			"using P = pair<ll,ll>;",
 			" ",
@@ -1470,5 +1474,59 @@
 		],
 		"description": "template for test"
 	},
+	"拡張ユークリッドの互除法" : {
+		"prefix": "kakutyouyu-kuriddo",
+		"body": [
+			"//返り値gcd(a,b)",
+			"//ax + by = gcd(a,b)を満たすx,yを参照で返す",
+			"ll extGCD(ll a,ll b,ll &x, ll&y){",
+			"	if(b == 0){",
+			"		x = 1;",
+			"		y = 0;",
+			"		return a;",
+			"	}",
+			"	ll d = extGCD(b,a % b,y,x);",
+			"	y -= a/b * x;",
+			"	return d;",
+			"}"			
+		],
+		"description": "template for kakutyouyu-kuriddo"
+	},
+	"CRT" : {
+		"prefix": "CRT",
+		"body": [
+			"//返り値gcd(a,b)",
+			"//ax + by = gcd(a,b)を満たすx,yを参照で返す",
+			"ll extGCD(ll a,ll b,ll &x, ll&y){",
+			"	if(b == 0){",
+			"		x = 1;",
+			"		y = 0;",
+			"		return a;",
+			"	}",
+			"	ll d = extGCD(b,a % b,y,x);",
+			"	y -= a/b * x;",
+			"	return d;",
+			"}"
+			" ",
+			"// リターン値を (r, m) とすると解は x ≡ r (mod. m)",
+			"// 解なしの場合は (0, -1) を返す",
+			"// b:あまり、m:法",
+			"pair<ll,ll> crt(const vector<ll> &b,const vector<ll> &m){",
+			"	assert(b.size() == m.size());",
+			"	ll r = 0; ll lcm_m = 1;",
+			"	rep(i,b.size()){",
+			"		ll p,q;",
+			"		ll d = extGCD(lcm_m,m[i],p,q);",
+			"		if((b[i] - r) % d != 0)return {0,-1};//解なし",
+			"		ll tmp = (b[i]-r)/d * p % (m[i]/d);//多分オーバーフロー対策",
+			"		r += lcm_m * tmp;",
+			"		lcm_m *= m[i]/d;",
+			"	}",
+			"	return {(r % lcm_m+lcm_m)%lcm_m,lcm_m};",
+			"}"
+		],
+		"description": "template for CRT"
+	},
+	
 	
 }
