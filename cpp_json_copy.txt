@@ -20,6 +20,7 @@
 			"typedef unsigned long long ull;",
 			"typedef long double ld;",
 			"typedef vector<long long> vll;",
+			"typedef vector<pair<long long ,long long>> vpll;",
 			"typedef vector<vector<long long>> vvll;",
 			"typedef set<ll> sll;",
 			"typedef map<long long , long long> mpll;",
@@ -73,6 +74,7 @@
 			"typedef unsigned long long ull;",
 			"typedef long double ld;",
 			"typedef vector<long long> vll;",
+			"typedef vector<pair<long long ,long long>> vpll;",
 			"typedef vector<vector<long long>> vvll;",
 			"typedef set<ll> sll;",
 			"typedef map<long long , long long> mpll;",
@@ -146,7 +148,7 @@
 		"description": "template for Binary search"
 	},
 	"素因数分解" : {
-		"prefix": "Soinnsuubunnkai",
+		"prefix": "Soinnsuubunnkai_enumpr",
 		"body": [
 			"//素因数分解",
 			"map<ll,ll> enumpr(ll n) {",
