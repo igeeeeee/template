@@ -1,0 +1,48 @@
+struct mexset{
+  set<pair<ll,ll>> se;//両閉区間
+  mexset(){
+    se.emplace(-INF,-INF);
+    se.emplace(INF,INF);
+  } 
+
+  bool count(ll x){
+    auto it = prev(se.lower_bound({x+1,x+1}));
+    return (it->first <= x && x <= it->second);
+  }
+
+  bool insert(ll x){
+    auto nit = se.lower_bound({x+1,x+1});
+    auto[nextf,nexts] = *nit;
+    auto it = prev(nit);
+    auto[nowf,nows] = *it;
+    if(nowf <= x && x <= nows){
+      return false;
+    }
+    if(nows == x-1){
+      if(nextf == x+1){
+        se.erase(it);
+        se.erase(nit);
+        se.emplace(nowf,nexts);
+      }else{
+        se.erase(it);
+        se.emplace(nowf,x);
+      }
+    }else{
+      if(nextf == x+1){
+        se.erase(nit);
+        se.emplace(x,nexts);
+      }else{
+        se.emplace(x,x);
+      }
+    }
+    return true;
+  }
+  ll mex(ll x = 0){
+    auto [nowf,nows] = *prev(se.lower_bound({x+1,x+1}));
+    if(nowf <=x  && x <= nows){
+      return nows+1;
+    }else{
+      return x;
+    }
+  }
+};

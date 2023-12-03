@@ -1,4 +1,5 @@
 void cordinate_compression(vector<ll> &x){
   //座圧して返す
+  sort(x.begin(),x.end())
   x.erase(unique(x.begin(),x.end()),x.end());
 }
