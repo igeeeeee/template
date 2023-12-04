@@ -1923,6 +1923,42 @@
 		],
 		"description": "template for 非再帰遅延セグ木"
 	},
+	"SuffixArray" : {
+		"prefix": "suffixarray",
+		"body": [
+			"vector<ll> suffixarray(string s){",
+			"  ll n = s.size();",
+			"  vector<ll> sa(n+1),rank(n+1),tmp(n+1);",
+			"  for(ll i = 0;i <= n;i++){",
+			"    sa[i] = i;",
+			"    rank[i] = i < n ? s[i]:-1;//1文字目は文字コードでいい",
+			"  }",
+			"  for(ll k = 1;k <= n;k *= 2){",
+			"    auto comp = [&](ll a,ll b)-> bool{",
+			"      if(rank[a] != rank[b]){",
+			"        return rank[a] < rank[b];",
+			"      }else {",
+			"        ll ra = a + k <= n ? rank[a+k]:-1;",
+			"        ll rb = b + k <= n ? rank[b+k]:-1;",
+			"        return ra < rb;",
+			"      }",
+			"    };",
+			"    sort(sa.begin(),sa.end(),comp);",
+			"    //tmpに次のランクを計算",
+			"    tmp[sa[0]] = 0;",
+			"    for(ll i = 1;i <= n;i++){",
+			"      tmp[sa[i]] = tmp[sa[i-1]] + (comp(sa[i-1],sa[i]) ? 1:0);",
+			"    }",
+			"    for(ll i = 0;i <= n;i++){",
+			"      rank[i] = tmp[i];",
+			"    }",
+			"  }",
+			"  return sa;",
+			"}"
+			
+		],
+		"description": "template for SuffixArray"
+	},
 	
 	
 }
