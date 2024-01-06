@@ -36,11 +36,24 @@
 			"const ll INF = 1LL << 60;",
 			"const ld EPS = 1e-9;",
 			" ",
+			"inline ll lfloor(ll x,ll m){return (x - ((x % m+ m)%m))/m;}",
 			"inline ll positive_mod(ll a,ll m){return (a % m + m)%m;}",
 			"inline ll popcnt(ull a){ return __builtin_popcountll(a);}",
 			"template<class T> bool chmin(T& a, T b){if(a > b){a = b;return true;}return false;}",
 			"template<class T> bool chmax(T& a, T b){if(a < b){a = b;return true;}return false;}",
+			"//vectorのcin",
+			"template<typename T>",
+			"std::istream &operator>>(std::istream&is,std::vector<T>&v){for(T &in:v){is>>in;}return is;}",
+			"//vectorのcout",
+			"template<typename T>",
+			"std::ostream &operator<<(std::ostream&os,const std::vector<T>&v){for(auto it=std::begin(v);it!=std::end(v);){os<<*it<<((++it)!=std::end(v)?\" \":\"\");}return os;}",
 			"template<class... T>void input(T&... a){(cin >> ... >> a);}",
+			"void print(){cout << endl;}",
+			"template<class T, class... Ts>void print(const T& a, const Ts&... b){cout << a;((cout << ' ' << b), ...);cout << endl;}",
+			"template<class T> void pspace(const T& a){ cout << a << ' ';}",
+			"void yes(bool i = true){ return print(i?\"yes\":\"no\"); }",
+			"void Yes(bool i = true){ return print(i?\"Yes\":\"No\"); }",
+			"void YES(bool i = true){ return print(i?\"YES\":\"NO\"); }",
 			"//grid探索用",
 			"vector<ll> _ta = {0,0,1,-1,1,1,-1,-1};",
 			"vector<ll> _yo = {1,-1,0,0,1,-1,1,-1};",
@@ -91,11 +104,24 @@
 			"const ll INF = 1LL << 60;",
 			"const ld EPS = 1e-9;",
 			" ",
+			"inline ll lfloor(ll x,ll m){return (x - ((x % m+ m)%m))/m;}",
 			"inline ll positive_mod(ll a,ll m){return (a % m + m)%m;}",
 			"inline ll popcnt(ull a){ return __builtin_popcountll(a);}",
 			"template<class T> bool chmin(T& a, T b){if(a > b){a = b;return true;}return false;}",
 			"template<class T> bool chmax(T& a, T b){if(a < b){a = b;return true;}return false;}",
+			"//vectorのcin",
+			"template<typename T>",
+			"std::istream &operator>>(std::istream&is,std::vector<T>&v){for(T &in:v){is>>in;}return is;}",
+			"//vectorのcout",
+			"template<typename T>",
+			"std::ostream &operator<<(std::ostream&os,const std::vector<T>&v){for(auto it=std::begin(v);it!=std::end(v);){os<<*it<<((++it)!=std::end(v)?\" \":\"\");}return os;}",
 			"template<class... T>void input(T&... a){(cin >> ... >> a);}",
+			"void print(){cout << endl;}",
+			"template<class T, class... Ts>void print(const T& a, const Ts&... b){cout << a;((cout << ' ' << b), ...);cout << endl;}",
+			"template<class T> void pspace(const T& a){ cout << a << ' ';}",
+			"void yes(bool i = true){ return print(i?\"yes\":\"no\"); }",
+			"void Yes(bool i = true){ return print(i?\"Yes\":\"No\"); }",
+			"void YES(bool i = true){ return print(i?\"YES\":\"NO\"); }",
 			"//grid探索用",
 			"vector<ll> _ta = {0,0,1,-1,1,1,-1,-1};",
 			"vector<ll> _yo = {1,-1,0,0,1,-1,1,-1};",
@@ -326,7 +352,7 @@
 		"description": "template for WarshallFloyd"
 	},
 	"TopologicalSort" : {
-		"prefix": "DFS",
+		"prefix": "TopologicalSort",
 		"body": [
 			"//隣接リストgを利用,n頂点",
 			"auto topological_sort = [](vector<vector<ll>> &g,ll n){",
@@ -1958,6 +1984,13 @@
 			
 		],
 		"description": "template for SuffixArray"
+	},
+	"fix_setpercision" : {
+		"prefix": "Fix_Setpercision",
+		"body": [
+			"std::fixed << std::setprecision(10) <<  ",
+		],
+		"description": "use for floating points"
 	},
 	
 	
