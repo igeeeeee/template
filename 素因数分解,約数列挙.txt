@@ -25,6 +25,8 @@ vector<ll> divisor(ll n){
   return ret;
 }
 
+
+
 //前処理、約数列挙PまでO(PlogP) //昇順でない
  ll P = lpow(10,6);
   vector<vector<ll>> primeFact(P+1);
