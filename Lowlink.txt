@@ -1,0 +1,131 @@
+struct Lowlink{
+  ll n;
+  vector<ll> ord;
+  vector<ll>low;
+  vector<ll>articulation,bridge;//atriculation 関節点,bridgeは橋になる辺の番号を格納 
+  vector<vector<pll>> g;
+  vector<ll>found;
+  vector<ll> c;//二重辺連結分解で使用
+  ll m;//辺の数
+
+  Lowlink(ll _n):n(_n),m(0){
+    ord.resize(n,INF);
+    low.resize(n);
+    g.resize(n);
+    found.resize(n);
+  }
+
+  ll add_edge(ll u, ll v){
+    g[u].push_back({v,m});
+    g[v].push_back({u,m});
+    return m++;
+  }
+
+  ll dfs(ll v,ll par, ll num){
+    ord[v] = num;
+    low[v] = num;
+    found[v] =1;
+    bool isa = false; //関節点かどうか
+    ll cnt = 0;//ｖが根のときに関節点かどうか判定に使用
+    for(auto &p:g[v]){
+      auto[to,id]  = p;
+      if(to == par){continue;}
+      if(found[to] != 0){
+        //発見済みだったから今見ている辺は後退辺
+        chmin(low[v],ord[to]);
+      }else{
+        //未発見
+        cnt++;
+        num = dfs(to,v,num+1);
+        if(par != -1 && low[to] >= ord[v]){
+          isa = true;
+        }
+        chmin(low[v],low[to]);
+        if(ord[v] < low[to]){
+          //子のlowが子で終わってたらbridge
+          bridge.push_back(id);
+        }
+      }
+    }
+    if(par == -1  && cnt >= 2)isa = true;
+    if(isa)articulation.push_back(v);//関節点だった
+    return num + 1;
+  }
+  //構築して連結成分数を返す 
+  ll build(){
+    ll k = 0;
+    ll cnt = 0;//シンプルに連結成分数
+    rep(i,n){
+      if(found[i] == 0){
+        k = dfs(i,-1,k);
+        cnt++;
+      }
+    }
+    return cnt; //シンプルに連結成分数を返しておく
+  }
+
+  vector<vector<ll>> bc;
+  vector<ll> bc_id;
+  //二重頂点連結分解
+  void bcc(){
+    bc_id = vector<ll>(m,-1);
+    vector<ll> used(n);
+    auto add = [&](ll id,ll num){
+      bc[num].push_back(id);
+      bc_id[id] = num;
+    };
+    auto dfs = [&](auto dfs,ll v,ll par,ll num)->void{
+      used[v] = 1;
+      for(auto &[to,id]:g[v]){
+        if(to == par){continue;}
+        if(used[to] == 0 ){
+          ll nownum = num;
+          if(low[to] >= ord[v]){
+            nownum = bc.size();
+            bc.push_back({});//新しくグループ作る
+          }
+          add(id,nownum);
+          dfs(dfs,to,v,nownum);
+        }else if(ord[to] < ord[v]){
+          add(id,num);//後退辺は同じグループ
+        }
+      }
+    };
+    rep(i,n){
+      if(used[i] == 0){
+        dfs(dfs,i,-1,-1);
+      }
+    }
+  }
+
+  
+
+  //二重辺連結分解 build()した後
+  //cに各頂点がどのグループに属するか格納される
+  ll two_edge_connect_component(){
+    //~~~~~~二重辺連結分解~~~~~~~~~~~
+    // 計算量 O(n+m)
+    c.resize(n,-1);
+    ll ccnt = 0;
+    rep(i,n){
+      if(c[i] == -1){
+        auto dfs2 = [&](auto dfs2, ll v,ll par,ll num)->ll{
+          if(par != -1 && ord[par] >= low[v]){
+            c[v] = c[par];
+          }else{
+            c[v] = num++;
+          }
+          for(auto &[to,id]:g[v]){
+            if(c[to] == -1){
+              num = dfs2(dfs2,to,v,num);
+            }
+          }
+          return num;
+        };
+        ccnt = dfs2(dfs2,i,-1,ccnt);
+      }
+    }
+    return ccnt;
+  }
+
+};
