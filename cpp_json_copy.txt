@@ -780,11 +780,11 @@
 	"RmQ" : {
 		"prefix": "RmQ",
 		"body": [
-			"class SegmentTree{",
+			"class RmQ{",
 			"  public:",
 			"  vector<ll> tree;",
 			"  ll siz = 0;",
-			"  SegmentTree(ll n){",
+			"  RmQ(ll n){",
 			"    ll i = 0;",
 			"    while((1 << i) < n ){",
 			"      i++;",
