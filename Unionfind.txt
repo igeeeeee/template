@@ -2,13 +2,13 @@ class UnionFind{
   public:
   vector<ll> par;
   vector<ll> siz;
-
+ 
   UnionFind(ll n) {
     par.resize(n,-1);
     siz.resize(n,1);
     _n = n;
   }
-
+ 
   ll leader(ll a){
     assert(0 <= a && a < _n);
     while(par[a] != -1){
@@ -16,12 +16,12 @@ class UnionFind{
     }
     return a;
   }
-
+ 
   ll size(ll a){
     assert(0 <= a && a < _n);
-    return size(siz[leader(a)]);
+    return siz[leader(a)];
   }
-
+ 
   ll merge(ll a,ll b){
     assert(0 <= a && a < _n);
     assert(0 <= b && b < _n);
@@ -38,7 +38,7 @@ class UnionFind{
       return v;
     }
   }
-
+ 
   bool same(ll a,ll b){
     assert(0 <= a && a < _n);
     assert(0 <= b && b < _n);
@@ -48,7 +48,7 @@ class UnionFind{
       return false;
     }
   }
-
+ 
   vector<vector<ll>> groups(){
     map<ll,vector<ll>> mp;
     for(ll i = 0;i < _n;i++){
@@ -61,7 +61,7 @@ class UnionFind{
     }
     return ans;
   }
-
+ 
   private:
   ll _n;
 };
