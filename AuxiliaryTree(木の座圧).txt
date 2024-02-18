@@ -1,4 +1,4 @@
-//verify https://onlinejudge.u-aizu.ac.jp/solutions/problem/GRL_5_C/review/8911290/T21140031/C++17
+//verify https://atcoder.jp/contests/typical90/submissions/50408180
 //1indexed
 template <class T>
 class SegmentTree{
@@ -106,5 +106,40 @@ struct LCA{
   // x,yのLCA求める({深さ,頂点番号})
   pair<ll,ll> query(ll x,ll y){
     return seg_euler.query(min(et.fa[x],et.fa[y]),max(et.fa[x],et.fa[y])+1);
+  }
+};
+
+struct AuxiliaryTree{//LCA木、共通祖先を維持したまま木を圧縮する
+  LCA lca;
+  ll n;
+
+  AuxiliaryTree(ll _n, vector<vector<ll>> &g):n(_n){
+    lca = LCA(_n,g);
+  }
+  //auxiliary tree の構築,頂点集合、隣接リスト、参照だから書き換わる
+  void make_auxiliary_tree(vector<ll> &vs,vector<vector<ll>> &retg){
+    assert((ll)retg.size() == n);
+    auto cmp_preorder = [&](ll x,ll y){
+      return lca.et.fa[x] < lca.et.fa[y]; 
+    };
+    sort(vs.begin(),vs.end(),cmp_preorder);
+    ll siz = vs.size();
+    rep(i,siz-1){
+      vs.push_back(lca.query(vs[i],vs[i+1]).second);
+    }
+    sort(vs.begin(),vs.end(),cmp_preorder);
+    vs.erase(unique(vs.begin(),vs.end()),vs.end());
+    stack<ll> st;
+    rep(i,vs.size()){
+      ll now = vs[i];
+      while(!st.empty() && lca.et.la[st.top()] < lca.et.fa[now]){
+        st.pop();
+      }
+      if(!st.empty()){
+        retg[st.top()].push_back(now);
+        retg[now].push_back(st.top());
+      }
+      st.push(now);
+    }
   }
 };

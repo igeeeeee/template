@@ -1,0 +1,25 @@
+struct EulerTour{
+  vector<ll> fa,la;//頂点vがDFS探索順で最初に現れた時間とその頂点を抜けた時間
+  vector<ll> depth;
+  vector<pair<ll,ll>> euler_tour;//dfsしたときに現れる頂点の(深さ、頂点番号)
+  EulerTour(){}
+  EulerTour(ll n,vector<vector<ll>> &g){
+    fa.resize(n);la.resize(n);
+    depth.resize(n,INF);
+    depth[0] = 0;
+    dfs_euler(g,0);
+  }
+
+  void dfs_euler(vector<vector<ll>> &g,ll v){
+    fa[v] = euler_tour.size();
+    euler_tour.push_back({depth[v],v});
+    for(auto &p:g[v]){
+      if(depth[p] == INF){
+        depth[p] = depth[v] + 1;
+        dfs_euler(g,p);
+        euler_tour.push_back({depth[v],v});
+      }
+    }
+    la[v] = euler_tour.size()-1;
+  }
+};
