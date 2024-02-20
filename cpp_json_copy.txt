@@ -2513,6 +2513,30 @@
 		],
 		"description": "template for Auxiliary tree "
 	},
+	"3分探索" : {
+		"prefix": "Sanbuntansaku",
+		"body": [
+			"//3分探索、初期値は閉区間の端でいい",
+			"ll l = ;//左端閉",
+			"ll r = ;//右端閉",
+			"auto f = [&](ll m1,ll m2)->bool{",
+			"  //m1のときの方がいい値かどうか",
+			"};",
+			"//最終的な答えは離散値ならl,l+1,rのいづれかにある",
+			"while(abs(l-r) >2){",
+			"  ll m1 = l + (r-l)/3;",
+			"  ll m2 = r - (r-l)/3;",
+			"  if(f(m1,m2)){",
+			"    //m1のほうがいい値だった",
+			"    r = m2;",
+			"  }else{",
+			"    l = m1;",
+			"  }",
+			"}"
+
+		],
+		"description": "template for 3分探索"
+	},
 	"a" : {
 		"prefix": "TEMPLATE",
 		"body": [
