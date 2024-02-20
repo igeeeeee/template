@@ -33,7 +33,7 @@ struct WeightUnionFind{
  
   ll size(ll a){
     assert(0 <= a && a < _n);
-    return size(siz[leader(a)]);
+    return siz[leader(a)];
   }
 
   // weight(b) - weight(a) = w となるように merge する
