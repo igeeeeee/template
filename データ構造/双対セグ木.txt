@@ -1,0 +1,70 @@
+//双対セグ木
+//verify https://onlinejudge.u-aizu.ac.jp/solutions/problem/DSL_2_D/review/8951597/T21140031/C++17
+template<class M>
+struct DualSegmentTree{
+  using FM = function<M(M,M)>;
+  ll siz ;
+  FM fm;
+  const M em;//Mの単位元
+  vector<M> lazy;
+  ll height;
+  
+  DualSegmentTree(ll n,FM _fm,M _em):fm(_fm),em(_em)
+  {
+    ll i = 0;
+    while((1 << i) < n){
+      i++;
+    }
+    lazy.resize(1 << (i+1),_em);
+    siz = 1 << i;
+    height = i;
+  }
+
+  void all_apply(ll p,M m){
+    lazy[p] = fm(lazy[p],m);
+  }
+
+  void push(ll p){
+    if(lazy[p] == em)return ;
+    all_apply(2 * p,lazy[p]);
+    all_apply(2 * p+1,lazy[p]);
+    lazy[p] = em;
+  }
+
+  M get(ll p){
+    p+= siz;
+    for(ll i = height;i >= 1;i--){
+      push(p >> i);
+    }
+    return lazy[p];
+  }
+
+  M query(ll pos){
+    return get(pos);
+  }
+
+  void update(ll l,ll r, M m){
+    if(l == r)return ;
+    l+= siz;
+    r+= siz;
+
+    for(ll i = height;i>= 1;i--){
+      if(((l>> i) << i) != l)push(l >> i);
+      if(((r>> i) << i) != r)push((r-1) >>i);
+    }
+    
+   ll tmpl = l,tmpr = r;
+    while(l < r){
+      if(l & 1) all_apply(l++,m);
+      if(r & 1) all_apply(--r,m);
+      l>>= 1;
+      r>>= 1;
+    }
+    l = tmpl;
+    r = tmpr;
+  }
+  M operator[](ll pos){
+    return get(pos);
+  }
+ 
+};
