@@ -48,11 +48,7 @@ int main(){
 	ofstream o;
 	o.open("../output.txt");
 	each(p,words){
-		if(p == words.back()){
-			o <<"\""  << p << "\"" << endl;
-		}else{
-			o <<"\""  << p << "\"," << endl;
-		}
+		o <<"\""  << p << "\"," << endl;
 	}
 
 }
