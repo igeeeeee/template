@@ -1,3 +1,4 @@
+//ライブラリをスニペット用に変換するやつ
 #include <bits/stdc++.h>
 using namespace std;
 #define rep(i, n) for (long long i = 0; i < (long long)(n); i++)

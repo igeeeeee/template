@@ -1,0 +1,97 @@
+//verify(update & query) https://atcoder.jp/contests/abc106/submissions/52135955
+//verify(build & query) https://onlinejudge.u-aizu.ac.jp/solutions/problem/1068/review/9067005/T21140031/C++17
+//参考 https://drken1215.hatenablog.com/entry/2024/03/31/132815
+
+template<class T>
+class SegmentTree2D{
+  public:
+  vector<T> tree;
+  ll h,w;//配列のサイズに使う
+  ll hsiz,wsiz; 
+  T e; //単位元 初期化に使われるやつ
+  function<T(T,T)> op;
+ 
+  SegmentTree2D(){}
+
+  SegmentTree2D(ll _h,ll _w,function<T(T,T)> _op,T _e){
+    init(_h,_w,_op,_e);
+  }
+
+  void init(ll _h,ll _w,function<T(T,T)> _op, T _e){
+    h = _h;w = _w;
+    op = _op;
+    e = _e;
+    ll i = 0;
+    while((1 << i) < h){i++;}
+    hsiz = 1 << i;
+
+    ll j = 0;
+    while((1 << j) < w){j++;}
+    wsiz = 1 << j;
+    tree.assign(hsiz * wsiz * 4,e);
+  }
+
+  ll id(ll y,ll x) const{
+    return y * 2 * wsiz + x;
+  }
+
+  void build(const vector<vector<T>> &v){
+    assert(h == (ll)v.size() && w == (ll)v[0].size());
+    rep(i,h){
+      rep(j,w){
+        tree[id(i + hsiz,j + wsiz)] = v[i][j];
+      }
+    }
+    for(ll j = wsiz;j < wsiz * 2;j++){
+      for(ll i = hsiz-1;i;i--){
+        tree[id(i,j)] = op(tree[id(i*2,j)],tree[id(i*2 +1,j)]);
+      }
+    }
+    for(ll i = 0;i <hsiz * 2;i++){
+      for(ll j = wsiz-1;j;j--){
+        tree[id(i,j)] = op(tree[id(i,j*2)],tree[id(i,j*2+1)]);
+      }
+    }
+  }
+
+  void update(ll y,ll x,T v){
+    assert(y >= 0 && y < h && x >= 0 && x < w);
+    y += hsiz;x += wsiz;
+    tree[id(y,x)] = v;
+    for(ll i = y >> 1;i;i >>= 1){
+      tree[id(i,x)] = op(tree[id(i * 2,x)],tree[id(i * 2 + 1,x)]);
+    }
+    for(;y;y >>= 1){
+      for(ll j = x >> 1;j;j>>= 1){
+        tree[id(y,j)] = op(tree[id(y,j * 2)],tree[id(y,j * 2 + 1)]);
+      }
+    }
+  }
+
+  T _query(ll y, ll xl,ll xr){
+    T ret = e;
+    while(xl < xr){
+      if(xl & 1)ret = op(ret,tree[id(y,xl++)]);
+      if(xr & 1)ret = op(tree[id(y,--xr)],ret);
+      xl >>= 1;xr >>= 1;
+    }
+    return ret;
+  }
+
+  T query(ll yl,ll yr,ll xl,ll xr){
+    assert(0 <= yl && yl <= yr && yr <= h);
+    assert(0 <= xl && xl <= xr && xr <= w);
+    T ret = e;
+    yl += hsiz; yr += hsiz; xl += wsiz; xr += wsiz;
+    while(yl < yr){
+      if(yl & 1)ret = op(ret,_query(yl++,xl,xr));
+      if(yr & 1)ret = op(_query(--yr,xl,xr),ret);
+      yl >>= 1;yr >>= 1;
+    }
+    return ret;
+  }
+
+  T operator () (ll y,ll x){
+    return tree[id(y + hsiz,x + wsiz)];
+  }
+};
