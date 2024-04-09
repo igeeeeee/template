@@ -1,0 +1,59 @@
+//verify https://atcoder.jp/contests/abc291/submissions/52202269
+struct CentroidDecomposition{
+  ll n;
+  vector<vector<ll>> g;
+  vector<ll> used;
+  //sz:重心分解後の最大部分木に含まれる頂点の数(自分を含める)
+  //parent:重心分解後の親の頂点
+  vector<ll> sz,parent;
+  CentroidDecomposition(ll _n,vector<vector<ll>> &_g):n(_n),g(_g){
+    used.resize(n);sz.resize(n);parent.resize(n);
+  }
+
+  //DFSして部分木のサイズを計算する
+  void calcsize(ll v, ll par){
+    sz[v] = 1;// szを重心分解するたびに繰り返し使うので1で一旦初期化
+    for(auto &p:g[v]){
+      if(p != par && used[p] == 0){
+        calcsize(p,v);
+        sz[v] += sz[p];
+      }
+    }
+  }
+
+  //今の頂点、元のグラフでの親、最後の重心、今重心を探してる部分木のサイズ
+  void _build(ll v,ll par,ll root,ll siz){
+    ll nv = -1;
+    ll maxtreesiz = 0;
+    for(auto &p:g[v]){
+      if(used[p] == 1 or p == par)continue;
+      if(chmax(maxtreesiz,sz[p])){
+        nv = p;
+      }
+    }
+    if(nv == -1){
+      //出る辺がなかった. o-o-... みたいなときで、この時親はすでに重心になっているはず
+      parent[v] = root;
+      return;
+    }
+    if(2 * maxtreesiz > siz){
+      //vは部分木の重心でないので部分木サイズの一番大きい隣接点に移動
+      _build(nv,v,root,siz);
+    }else{
+      //vが部分木の重心だった
+      used[v] = 1;
+      parent[v] = root;
+      for(auto &p:g[v]){
+        if(used[p] == 0){
+          calcsize(p,v);
+          _build(p,v,v,sz[p]);
+        }
+      }
+    }
+  }
+
+  void build(){
+    calcsize(0,-1);
+    _build(0,-1,-1,sz[0]);
+  }
+};
