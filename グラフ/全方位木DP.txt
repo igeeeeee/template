@@ -1,0 +1,84 @@
+//ref https://github.com/drken1215/algorithm/blob/master/Tree/rerooting_with_edge.cpp
+//verify https://atcoder.jp/contests/abc348/submissions/52401893
+template<class M,class E>
+struct ReRooting{
+  using Graph = vector<vector<E>>;
+  using GetIdFunc = function<ll(E)>;//Eから辺の行き先を取り出す
+  using AddEdgeFunc = function<M(E, M)>;//情報を持ち上げるときにやりたい操作
+  using MergeFunc = function<M(M, M)>;//情報のマージ
+  using AddNodeFunc = function<M(ll, M)>;//頂点の情報で反映させたいもの
+
+  Graph g;
+  M e;
+  GetIdFunc getid;
+  AddEdgeFunc addedge;
+  MergeFunc merge;
+  AddNodeFunc addnode;
+
+  vector<vector<M>> dp;
+
+  ReRooting(){}
+  ReRooting(const Graph &_g,const M &_e,const GetIdFunc &_getid,const AddEdgeFunc &_addedge,const MergeFunc &_merge,const AddNodeFunc &_addnode){
+    g = _g;
+    e = _e;
+    getid = _getid;
+    addedge = _addedge;
+    merge = _merge;
+    addnode = _addnode;
+    build();
+  }
+
+  //木DPする
+  M rooting(ll v,ll par){
+    M ret = e;
+    dp[v].assign((ll)g[v].size(),e);
+    rep(i,g[v].size()){
+      ll nv = getid(g[v][i]);
+      if(nv == par)continue;
+      dp[v][i] = rooting(nv,v);
+      ret = merge(ret,addedge(g[v][i],dp[v][i]));
+    }
+    return addnode(v,ret);
+  }
+
+  void rerooting(ll v,ll par,M pval){
+    rep(i,g[v].size()){
+      ll nv = getid(g[v][i]);
+      if(nv == par){
+        dp[v][i] = pval;//親から来たやつ
+        continue;
+      }
+    }
+    //左右累積計算
+    vector<M> left(g[v].size() + 1,e);
+    vector<M> right(g[v].size() + 1,e);
+    rep(i,g[v].size()){
+      ll ri = (ll)g[v].size() -1- i;
+      left[i+1] = merge(left[i],addedge(g[v][i],dp[v][i]));
+      right[i+1] = merge(right[i],addedge(g[v][ri],dp[v][ri]));
+    }
+    rep(i,g[v].size()){
+      ll nv = getid(g[v][i]);
+      ll ri = (ll) g[v].size()- 1 - i;
+      if(nv == par)continue;
+      M npval = merge(left[i],right[ri]);
+      rerooting(nv,v,addnode(v,npval));
+    }
+  }
+
+  void build(){
+    dp.assign((ll)g.size(),vector<M>());
+    ll root = 0;
+    rooting(root,-1);  
+    
+    rerooting(root,-1,e);
+  }
+
+  M get(ll x){
+    M ret = e;
+    rep(i,g[x].size()){
+      ret = merge(ret,addedge(g[x][i],dp[x][i]));
+    }
+    return addnode(x,ret);
+  }
+};
