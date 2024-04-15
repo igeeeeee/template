@@ -9,7 +9,7 @@ using R = ld;
 using P = complex<R>;
 using VP = vector<P>;
 
-const R EPS = 1e-9; // ここは適宜調節する,いつものやつから消す
+//const R EPS = 1e-9; // ここは適宜調節する,いつものやつから消す
 const R pi = acos(-1.0);
 
 int sgn(R a) {
