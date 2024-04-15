@@ -42,3 +42,37 @@ pair<ll,vector<pair<ll,ll>>> make_test(){
 
     return {N,A};
 }
+
+
+
+
+//参照渡しで値を作成して渡す
+void Maketest(ll &n){
+//配列を渡すときは最初に.clear()をしておく
+  random_device seed_gen;
+  mt19937_64 rnd(seed_gen());
+  
+  uniform_int_distribution<ll> da(1, 10);
+  uniform_int_distribution<ll> db(0, lpow(10,9));
+  n = da(rnd);
+
+
+  uniform_int_distribution<ll> dc(0, 1);
+  uniform_int_distribution<ll> dd(0, 1);
+}
+
+void myans(){
+  //答えの型注意
+}
+
+void correct(){
+  //答えの型注意
+}
+
+void test(){
+
+}
+
+void nomal(){
+
+}
