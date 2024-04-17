@@ -417,6 +417,30 @@ R closest_pair(VP p) { // 最近点対の距離
     return rec(0, sz(p));
 }
 
+R farthest_pair(VP p) {//最遠点対の距離
+  VP ps = convex_hull(p);
+  ll n = ps.size();
+  if(n == 2){//凸包が潰れてる
+    return dist(ps[0],ps[1]);
+  }
+  ll i = 0,j = 0;
+  rep(k,n){//x軸方向に最も遠い点対を求める
+    if(cp_x(ps[k],ps[i]))i = k;
+    if(cp_x(ps[j],ps[k]))j = k;
+  }
+  R ret = 0;
+  ll si = i,sj = j;
+  while(i != sj || j != si){//180度反転しきるまで
+    ret = max(ret,dist(ps[i],ps[j]));
+    if(det(ps[(i+1)%n] - ps[i],ps[(j+1)%n]-ps[j]) < 0){
+      i = (i + 1) % n;
+    }else{
+      j = (j + 1) % n;
+    }
+  }
+  return ret;
+}
+
 vector<VP> divisions(vector<L> lf, R lim = 1e9) {
     vector<L> ls;
     each(l, lf) {
@@ -512,5 +536,3 @@ vector<VP> divisions(vector<L> lf, R lim = 1e9) {
     }
     return ret;
 }
-
- 
