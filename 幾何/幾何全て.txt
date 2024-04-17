@@ -1,3 +1,4 @@
+
 //参考 https://github.com/saphmitchy/deliair-lib
 // 型名
 // R:Real, P:Point, L:Line, S:Segment, C:Circle, VP:vector<Point>
@@ -496,6 +497,19 @@ R common_area(C c, VP vp){// 円cと多角形の共通部分の面積
     ret += common_area(c,vp[i],vp[(i+1)%n]);
   }
   return ret;
+}
+
+R common_area(C p, C q) {// 円と円の共通部分の面積
+    R d = abs(p.p - q.p);
+    if (d >= p.r + q.r - EPS) return 0;
+    else if (d <= abs(p.r - q.r) + EPS) return min(p.r, q.r) * min(p.r, q.r) * pi;
+    R pcos = (p.r*p.r + d*d - q.r*q.r) / (p.r*d*2);
+    R pang = acosl(pcos);
+    R parea = p.r*p.r*pang - p.r*p.r*sin(pang*2)/2;
+    R qcos = (q.r*q.r + d*d - p.r*p.r) / (q.r*d*2);
+    R qang = acosl(qcos);
+    R qarea = q.r*q.r*qang - q.r*q.r*sin(qang*2)/2;
+    return parea + qarea;
 }
 
 vector<VP> divisions(vector<L> lf, R lim = 1e9) {
