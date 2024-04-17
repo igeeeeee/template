@@ -249,6 +249,26 @@ VP crosspoint(C c, L l) {//円と直線の交点
     return ret;
 }
 
+VP crosspoint(C c, S s) {//円と線分の交点
+    P h = proj(s, c.p);
+    P e = (s.b - s.a) / abs(s.b - s.a);
+    VP ret;
+    if (!inter(c, s))
+        return ret;
+    if (eq(dist(s, c.p), c.r)) {
+        ret.emplace_back(h);
+    } else {
+        R b = sqrt(c.r * c.r - norm(h - c.p));
+        if(ccw(s.a,s.b,h - e * b) == 0){//s.aに近い方から線分上なら追加する
+          ret.push_back(h - e * b);
+        }
+        if(ccw(s.a,s.b,h + e * b)==0){
+          ret.push_back(h + e * b);
+        }
+    }
+    return ret;
+}
+
 VP crosspoint(C c1, C c2) {//2つの円の交わる点
     R d = abs(c1.p - c2.p);
     R a = acos((c1.r * c1.r + d * d - c2.r * c2.r) / (2 * c1.r * d));
@@ -437,6 +457,43 @@ R farthest_pair(VP p) {//最遠点対の距離
     }else{
       j = (j + 1) % n;
     }
+  }
+  return ret;
+}
+
+// 原点, 点 a, 点 b とで囲まれる領域の面積 (三角形 ver と扇型 ver)
+R calc_element(P a, P b, R cr,bool triangle){
+  if(triangle)return det(a,b)/2;
+  else{
+    P tmp = b * (P(X(a),-Y(a)));
+    R ang = atan2(Y(tmp),X(tmp));
+    return cr * cr * ang/2;
+  }
+}
+
+// 円 C と、三角形 ((0, 0), ia, ib) との共通部分の面積
+R common_area(C c, P ia,P ib){
+  P a = ia - c.p , b = ib - c.p;
+  if(eq(abs(a-b),0))return 0;
+  bool isin_a = (sgn(c.r - abs(a))>= 0);
+  bool isin_b = (sgn(c.r - abs(b))>= 0);
+  if(isin_a && isin_b)return calc_element(a,b,c.r,true);//aもbも円の中
+
+  C oc(P(0,0),c.r);
+  S seg(a,b);
+  VP cr = crosspoint(oc,seg);
+  if(cr.empty())return calc_element(a,b,c.r,false);
+  P s = cr[0],t = cr.back();
+  return calc_element(s,t,c.r,true) + calc_element(a,s,c.r,isin_a) + calc_element(t,b,c.r,isin_b);
+
+}
+
+
+R common_area(C c, VP vp){// 円cと多角形の共通部分の面積
+  R ret = 0;
+  ll n = vp.size();
+  rep(i,n){
+    ret += common_area(c,vp[i],vp[(i+1)%n]);
   }
   return ret;
 }
