@@ -32,7 +32,7 @@ class SegmentTree{
   //[l,r) について、最初はa = 0,b = (SegmentTree).siz, p = 0 にしておく 
   ll _query(ll l, ll r, ll a, ll b, ll p){
     if(r <= a or l >= b){
-      return -INF;
+      return 0;//初期値-INFならそれにする
     }
     if(l <= a and b <= r){
       return tree[p];
