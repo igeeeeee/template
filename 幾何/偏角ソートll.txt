@@ -1,0 +1,22 @@
+//verify https://judge.yosupo.jp/submission/209493
+
+  auto  arg_sort = [&](vpll &v){
+  //原点=0,(pi,2pi] = -1  (0pi,pi] = 1
+  auto sign = [&](const pll &p){
+    if(p.first  == 0 && p.second == 0){
+      return 0;
+    }else if(p.second < 0 || (p.second == 0 && p.first > 0)){
+      return -1;
+    }else{
+      return 1;
+    }
+  };
+  auto cp = [&](const pll &p,const pll &q){
+    if(sign(p) != sign(q)){
+      return sign(p) < sign(q);
+    }else{//外積>0で判定
+      return p.first * q.second - p.second * q.first > 0;
+    }
+  };
+  sort(v.begin(),v.end(),cp);
+};
