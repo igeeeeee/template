@@ -41,6 +41,11 @@ ostream &operator<<(ostream &os, P p) {
     return os << X(p) << ' ' << Y(p);
 }
 
+R getarg(P b,P a){//ベクトルbはベクトルaを何radian回転させる必要があるか
+  assert(sgn(abs(a)) != 0);//長さが0はだめ
+  return arg(b/a);
+}
+
 bool cp_x(P p, P q) {//ベクトルの比較x軸で比較->y軸で比較
     if (!eq(X(p), X(q)))
         return X(p) < X(q);
@@ -626,6 +631,7 @@ void arg_sort(VP &v){
     if(sign(p) != sign(q)){
       return sign(p) < sign(q);
     }else{//外積>0で判定
+      //同じ向きにあるときは未定義、それぞれ決める
       return X(p) * Y(q) - Y(p) * X(q) > 0;
     }
   };
