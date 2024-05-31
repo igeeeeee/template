@@ -16,6 +16,20 @@ struct custom_hash {
 
 //rng(x)で割り当てられる
 
+
+/*
+mt19937_64 rnd(chrono::steady_clock::now().time_since_epoch().count());
+
+vll rands1(n),rands2(n);
+rep(i,n){
+  rands1[i] = rnd();
+  rands2[i] = rnd();
+}
+とかして
+{rands1でxor , rands2でxor} みたいなのをハッシュとしたほうが強いみたい
+//https://codeforces.com/blog/entry/129858 でいつもの落ちた
+*/
+
 //main使用例
 // Zobrist Hash
     // hashA[i] := 数列 a の先頭から i 個分の集合を表すハッシュ値
@@ -44,43 +58,3 @@ struct custom_hash {
 
     const auto& hashA = hashing();
     const auto& hashB = hashing();
-
-
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-//gloval定義　and 配列を受け取る版
-
-struct custom_hash {
-    static uint64_t splitmix64(uint64_t x) {
-        x += 0x9e3779b97f4a7c15;
-        x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9;
-        x = (x ^ (x >> 27)) * 0x94d049bb133111eb;
-        return x ^ (x >> 31);
-    }
-
-    size_t operator() (uint64_t x) const {
-        static const uint64_t FIXED_RANDOM =    
-            chrono::steady_clock::now().time_since_epoch().count();
-        return splitmix64(x + FIXED_RANDOM);
-    }
-} rng;
-
-// 要素の累積xor配列を返すイメージ
-// 配列aを受け取って Zobrist Hashを返す
-vector<uint64_t> hashing(vector<ll> a){
-  vector<uint64_t> hash(a.size() + 1, 0);//半開区間にする
-    set<long long> S;  // すでにあるかを確認する
-
-    for (int i = 0; i < (int)a.size(); ++i) {
-        long long x = a[i];
-
-        // すでに含まれている場合は何もしない
-        if (S.count(x)) {
-            hash[i + 1] = hash[i];
-            continue;
-        }
-        S.insert(x);
-        hash[i + 1] = hash[i] ^ rng(x);
-    }
-  return hash;
-}
