@@ -13,7 +13,7 @@ class MaximumFlow{
 			G.resize(n+1);
 		}
 
-		// a からbにcリットル流せる辺を追加
+    // a からbにcリットル流せる辺を追加
 		void add_edge(ll a,ll b , ll c){
 			ll ga_size = G[a].size();
 			ll gb_size = G[b].size();
