@@ -1,0 +1,12 @@
+数列 A(n)から xor の基底を取り出す操作
+vector<int> base;
+for(int v : A){
+  for(int e : base){
+    v = min(v, v ^ e);
+  }
+  if(v > 0) base.push_back(v);
+}   
+
+これでできる理由:
+i番目に追加された基底の最上位bitがdi桁目にあったとすると
+∀ j (> i) 番目に追加される基底についてdi桁目は0になるから
