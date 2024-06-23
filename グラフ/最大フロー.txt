@@ -1,7 +1,7 @@
 struct Edge {
 	ll to,cap,rev;
 };
-
+//O(FE)
 class MaximumFlow{
 	public:
 		ll siz = 0;
