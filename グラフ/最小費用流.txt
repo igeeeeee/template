@@ -1,0 +1,68 @@
+//参考: 蟻本P.203
+//verify https://onlinejudge.u-aizu.ac.jp/solutions/problem/GRL_6_B/review/9361786/T21140031/C++17
+struct Edge {
+	ll to,cap,cost,rev;
+};
+struct MincostFlow{
+  ll siz = 0;//頂点数
+  vector<vector<Edge>> G;
+  vector<ll> h;//ポテンシャル
+  vector<ll> dist;//最短距離
+  vector<ll> prevv,preve;//直前の頂点と辺
+  using P = pair<ll,ll>;
+  MincostFlow(ll n){
+    siz = n;
+    G.resize(siz);h.resize(siz);dist.resize(siz);
+    prevv.resize(siz);preve.resize(siz);
+  }
+
+  //fromからtoへ容量cap,コストcostの辺を追加
+  void add_edge(ll from,ll to, ll cap,ll cost){
+    G[from].push_back((Edge){to,cap,cost,(ll)G[to].size()});
+    G[to].push_back((Edge){from,0,-cost,(ll)G[from].size()-1});
+  }
+
+  //sからtへの流量fの最小費用流
+  //流せないなら-1
+  ll min_cost_flow(ll s,ll t,ll f){
+    ll ret = 0;
+    h.assign(siz,0LL);
+    while(f > 0){//ダイクストラでhを更新
+      priority_queue<P,vector<P>,greater<P>> pq;
+      dist.assign(siz,INF);
+      dist[s] = 0;
+      pq.push({0,s});
+      while(!pq.empty()){
+        P now = pq.top();pq.pop();
+        ll v = now.second;
+        if(dist[v] < now.first) continue;
+        for(ll i = 0;i < (ll)G[v].size();i++){
+          Edge &e = G[v][i];
+          if(e.cap > 0 && dist[e.to] > dist[v] + e.cost + h[v] - h[e.to]){
+            dist[e.to] = dist[v] + e.cost + h[v] - h[e.to];
+            prevv[e.to] = v;
+            preve[e.to] = i;
+            pq.push({dist[e.to],e.to});
+          }
+        }
+      }
+      if(dist[t] == INF){//これ以上ながせない
+        return -1;
+      }
+      for(ll i = 0;i < siz;i++)h[i] += dist[i];
+      //s->tの最短経路に沿って目一杯流す
+      ll d = f;
+      for(ll v = t;v != s;v = prevv[v]){
+        d = min(d,G[prevv[v]][preve[v]].cap);
+      }
+      f -= d;
+      ret += d * h[t];
+      for(ll v = t;v != s;v = prevv[v]){
+        Edge &e = G[prevv[v]][preve[v]];
+        e.cap -= d;
+        G[v][e.rev].cap += d;
+      }
+    } 
+    return ret;
+  }
+};
