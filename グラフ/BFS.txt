@@ -1,5 +1,6 @@
 queue<ll> que;
 //０からの距離が入る
+//01BFSのときは更新の判定のところを変更する
 vector<ll> find(n,INF);
 find[0] = 0;
 que.push(0);
@@ -7,7 +8,7 @@ while(!que.empty()){
 	ll now = que.front();
 	que.pop();
 	for(auto &p:g[now]){
-		if(find[p] == INF){
+		if(find[p] > find[now]+1){
 			find[p] = find[now]+1;
 			que.push(p);
 		}
