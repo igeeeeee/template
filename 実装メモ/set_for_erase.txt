@@ -1,0 +1,3 @@
+https://cpprefjp.github.io/reference/set/multiset/erase.html
+
+it = c.erase(it)で返り値受け取るの注意
