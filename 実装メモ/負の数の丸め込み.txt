@@ -3,5 +3,23 @@
 
 つまり、切り上げが発生するのは a % b が負のとき 
 
+//切り捨てのやつ
 A,B ともに正の場合 A / B
 A,B が負を取り得る場合 A / B - (A % B < 0)
+
+
+//拾ったやつ
+//https://atcoder.jp/contests/abc315/editorial/6994
+long long llceil(long long a,long long b){
+  if(a%b==0){return a/b;}
+ 
+  if(a>=0){return (a/b)+1;}
+  else{return -((-a)/b);}
+}
+ 
+long long llfloor(long long a,long long b){
+  if(a%b==0){return a/b;}
+ 
+  if(a>=0){return (a/b);}
+  else{return -((-a)/b)-1;}
+}
