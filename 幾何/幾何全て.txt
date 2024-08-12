@@ -171,11 +171,18 @@ R dist(L l, P p) {
     return abs(p - P(proj(l, p)));
 }
 
+//R dist(S s, P p) {
+//    P h = proj(s, p);
+//    if (inter(s, h))
+//        return abs(h - p);
+//    return min(abs(s.a - p), abs(s.b - p));
+//}
+
 R dist(S s, P p) {
     P h = proj(s, p);
-    if (inter(s, h))
-        return abs(h - p);
-    return min(abs(s.a - p), abs(s.b - p));
+    if(dot(p-s.a,s.b-s.a) <= 0) return abs(s.a-p);
+    if(dot(p-s.b,s.a-s.b) <= 0) return abs(s.b-p);
+    return abs(p - h);
 }
 
 R dist(L l, L m) {
