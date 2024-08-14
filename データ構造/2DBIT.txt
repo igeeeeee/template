@@ -1,0 +1,36 @@
+//verify https://atcoder.jp/contests/abc130/submissions/56682512
+//ref https://algo-logic.info/binary-indexed-tree/
+template <typename T>
+struct BIT2D {
+    int H, W;
+    vector<vector<T>> bit;  // データの格納先
+    BIT2D(int H_, int W_) { init(H_, W_); }
+    void init(int H_, int W_) {
+        H = H_ + 1;
+        W = W_ + 1;
+        bit.assign(H, vector<T>(W, 0));
+    }
+    //(h-1,w-1)にxを加算
+    void add(int h, int w, T x) {
+        h++;w++;
+        for (int i = h; i < H; i += (i & -i)) {
+            for (int j = w; j < W; j += (j & -j)) {
+                bit[i][j] += x;
+            }
+        }
+    }
+    // 0<=i<h かつ 0<=j<w
+    T sum(int h, int w) {
+        T s(0);
+        for (int i = h; i > 0; i -= (i & -i)) {
+            for (int j = w; j > 0; j -= (j & -j)) {
+                s += bit[i][j];
+            }
+        }
+        return s;
+    }
+    // h1<=i<h2 かつ w1<=j<w2
+    T query(int h1, int h2, int w1, int w2) {
+      return sum(h2, w2 ) - sum(h2 , w1 ) - sum(h1 , w2 ) + sum(h1 , w1 );
+    }
+};
