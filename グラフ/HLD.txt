@@ -7,6 +7,7 @@ struct HLD{
   vector<ll> par;//親の頂点番号
   vector<ll> sub;//頂点iの部分木サイズ
   vector<ll>head;//頂点iを含むheavy pathの頂点
+  vector<ll> la;//頂点iの部分木に含まれる最後のindex
   vector<ll>plc;//頂点iがhld列の何番目に現れるか
   vector<ll>order;//HLDした頂点列
   HLD(ll _n,vector<vector<ll>> &_g,ll root = 0){
@@ -14,7 +15,8 @@ struct HLD{
     g = _g;
     n = g.size();
     par.resize(n,-1);sub.resize(n,-1);
-    head.resize(n,-1);plc.resize(n,-1);
+    head.resize(n,-1);la.resize(n,-1);
+    plc.resize(n,-1);
     decide_heavy(root);
     head[root] = root;
     makehld(root);
@@ -42,6 +44,7 @@ struct HLD{
       }
       makehld(to);
     }
+    la[v] = (ll)order.size()-1;
   }
   //u-vパスを結ぶheavy path列を返す
   vector<pair<ll,ll>> query(ll u,ll v){
@@ -55,5 +58,4 @@ struct HLD{
     ret.push_back({min(plc[u],plc[v]),max(plc[u],plc[v])});
     return ret;
   }
-
 };
