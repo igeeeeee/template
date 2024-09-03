@@ -1,0 +1,59 @@
+//verify https://judge.yosupo.jp/submission/232848
+//ref https://atcoder.jp/contests/abc269/editorial/4838
+//https://qiita.com/Pro_ktmr/items/4e1e051ea0561772afa3
+struct HLD{
+  ll n;
+  vector<vector<ll>> g;
+  vector<ll> par;//親の頂点番号
+  vector<ll> sub;//頂点iの部分木サイズ
+  vector<ll>head;//頂点iを含むheavy pathの頂点
+  vector<ll>plc;//頂点iがhld列の何番目に現れるか
+  vector<ll>order;//HLDした頂点列
+  HLD(ll _n,vector<vector<ll>> &_g,ll root = 0){
+    n = _n;
+    g = _g;
+    n = g.size();
+    par.resize(n,-1);sub.resize(n,-1);
+    head.resize(n,-1);plc.resize(n,-1);
+    decide_heavy(root);
+    head[root] = root;
+    makehld(root);
+  }
+  //部分木サイズを計算しHeavyedge,Lightedgeに分解する
+  ll decide_heavy(ll v){
+    sub[v] = 1;
+    for(auto &to:g[v])if(par[v]!=to){
+      par[to] = v;
+      sub[v] += decide_heavy(to);
+      //今見てる部分木がg[v][0]を根とする部分木より大きいならswap
+      if(sub[to] > sub[g[v][0]])swap(to,g[v][0]);
+    }
+    return sub[v];
+  }
+
+  void makehld(ll v){
+    plc[v] = order.size();
+    order.push_back(v);
+    for(auto &to:g[v])if(par[v]!=to){
+      if(to == g[v][0]){
+        head[to] = head[v];
+      }else{
+        head[to] = to;
+      }
+      makehld(to);
+    }
+  }
+  //u-vパスを結ぶheavy path列を返す
+  vector<pair<ll,ll>> query(ll u,ll v){
+    vector<pair<ll,ll>> ret;
+    while(head[u] != head[v]){
+      if(plc[u] > plc[v])swap(u,v);
+      //vを前に持ってくる
+      ret.push_back({plc[head[v]],plc[v]});
+      v = par[head[v]];
+    }
+    ret.push_back({min(plc[u],plc[v]),max(plc[u],plc[v])});
+    return ret;
+  }
+
+};
