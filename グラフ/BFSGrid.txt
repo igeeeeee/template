@@ -1,0 +1,16 @@
+vvll find(h,vll(w,INF));
+queue<pll> que;
+find[0][0] = 0;
+que.push({0,0});
+while(!que.empty()){
+  auto[nowy,nowx] = que.front();
+  que.pop();
+  rep(p,4){
+    ll ny = nowy + _ta[p];
+    ll nx = nowx + _yo[p];
+    if(isin(ny,nx,h,w) && find[ny][nx] > find[nowy][nowx] + 1){
+      find[ny][nx] = find[nowy][nowx]+1;
+      que.push({ny,nx});
+    }
+  }
+}

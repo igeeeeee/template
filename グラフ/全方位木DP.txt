@@ -1,6 +1,14 @@
 //ref https://github.com/drken1215/algorithm/blob/master/Tree/rerooting_with_edge.cpp
 //verify https://atcoder.jp/contests/abc348/submissions/52401893
-template<class M,class E>
+/*
+    通常の木 DP において、頂点 v を根とする部分根付き木に関する再帰関数 dfs(v) について、
+ 　　　1. res = IDENTITY
+ 　　　2. 頂点 v の各子頂点 v2 (その辺を e とする) に対して：res = MERGE(res, ADDEDGE(e, rec(v2)))
+ 　　　3. return ADDNODE(v, res)
+ 　　というような更新を行うものとする。
+ 　　このような木 DP を全方位木 DP へと拡張する。
+ */
+template<class E,class M>
 struct ReRooting{
   using Graph = vector<vector<E>>;
   using GetIdFunc = function<ll(E)>;//Eから辺の行き先を取り出す
