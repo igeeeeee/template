@@ -7,8 +7,13 @@
  　　　3. return ADDNODE(v, res)
  　　というような更新を行うものとする。
  　　このような木 DP を全方位木 DP へと拡張する。
- */
-template<class E,class M>
+    using Graph = vector<vector<E>>;
+    using GetIdFunc = function<ll(E)>;//Eから辺の行き先を取り出す
+    using AddEdgeFunc = function<M(E, M)>;//情報を持ち上げるときにやりたい操作
+    using MergeFunc = function<M(M, M)>;//情報のマージ
+    using AddNodeFunc = function<M(ll, M)>;//頂点の情報で反映させたいもの
+*/
+template<class M,class E>
 struct ReRooting{
   using Graph = vector<vector<E>>;
   using GetIdFunc = function<ll(E)>;//Eから辺の行き先を取り出す
