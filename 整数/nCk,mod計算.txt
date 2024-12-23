@@ -47,10 +47,6 @@ long long nCk(ll n, ll k) {
     return fact[n] * (fact_inv[k] * fact_inv[n - k] % MOD) % MOD;
 }
 
-
-
-
-
 /*
 k <= 10^7 n<= 10^9の時
 nが固定でない時
