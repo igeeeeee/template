@@ -1,0 +1,104 @@
+//ref https://algo-logic.info/trie-tree/#
+// verify https://atcoder.jp/contests/abc353/submissions/53574123
+//i番目のノードのrootからの距離がもしかしたら怪しいかも
+//char_size:文字の種類数、その0番目に当たる文字を base
+//例 : Trie<26,'a'>
+template<ll char_size,ll base>
+struct Trie{
+	struct Node{
+		vector<ll> next;//子のidx,存在しないなら-1
+		ll accept;//その頂点が末端となる文字列のid
+		ll c; //baseからの距離
+		ll common; //その頂点を何個の文字列が共有しているか
+		Node(ll _c){
+			c = _c;
+			accept = 0;
+			common = 0;
+			next.assign(char_size,-1);
+		}
+	};
+
+	vector<Node> nodes;
+	ll root;
+
+	Trie(){
+		root = 0;
+		nodes.push_back(Node(root));
+	}
+
+	//文字列の挿入
+	void insert(const string &word){
+		ll nodeid = 0;
+		rep(i,word.size()){
+			ll c = (ll)(word[i] - base);
+			ll nextid = nodes[nodeid].next[c];
+			if(nextid == -1){//次の頂点がない
+				nextid = nodes.size();
+				nodes.push_back(Node(nodes[nodeid].c + 1)); //rootからの距離をNodeに持たせる.参考元から変更した
+				nodes[nodeid].next[c] = nextid;
+			}
+			nodes[nodeid].common++;
+			nodeid = nextid;
+		}
+		nodes[nodeid].common++;
+		nodes[nodeid].accept++;
+	}
+
+	//消せたらtrue
+	bool erase(const string &word){
+		//node自体は削除しない
+		// nodeid:今見てる頂点番号, widx:wordの何文字目(0idx)か
+		auto dfs = [&](auto dfs, ll nodeid,ll widx)->bool {
+			if(widx == (ll)word.size()){
+				//削除
+				nodes[nodeid].accept--;
+				nodes[nodeid].common--;
+				return true;
+			}
+			ll c = (ll)(word[widx] - base);
+			ll nextid = nodes[nodeid].next[c];
+			if(nextid != -1 && nodes[nextid].common!=0){//次に行けない
+				return false;
+			}
+			bool isEraseAble = dfs(dfs,nextid,widx+1);
+			if(!isEraseAble)return false;
+			//消せる
+			nodes[nodeid].accept--;
+			nodes[nodeid].common--;
+			return true;
+		};
+		return dfs(dfs,root,0);
+	}
+
+	//wordがすでに存在するか
+	bool search(const string &word,bool prefix = false){
+		ll nodeid = 0;
+		rep(i,word.size()){
+			ll c = (ll)(word[i] - base);
+			ll nextid = nodes[nodeid].next[c];
+			if(nextid == -1 || nodes[nextid].common==0){//次の頂点がないか、次の頂点を使ってる単語がない
+				return false;
+			}
+			nodeid = nextid;
+		}
+		if(prefix){
+			return true;
+		}else{
+			return nodes[nodeid].accept> 0;
+		}
+	}
+	bool start_with(const string &prefix){
+		return search(prefix,true);
+	}
+
+	//挿入した数
+	ll count() const {
+		return nodes[0].common;
+	}
+
+	// Trie木のノードの数
+	ll size() const {
+		return nodes.size();
+	}
+
+};
