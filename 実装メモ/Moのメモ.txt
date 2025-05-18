@@ -1,0 +1,52 @@
+ll bitlim = 0;
+ll tmpn = n; // nは配列長の最大
+while(tmpn > 0){
+  bitlim++;
+  tmpn>>= 1;
+}
+auto cp = [&](tpl3 a,tpl3 b)->bool{
+  auto [al,ar,aid] = a;
+  auto [bl,br,bid] = b;
+  rrep(i,bitlim,0){
+    if((ar >> i &1)^(br >> i & 1)){
+      //0のほうを前に
+      return (ar >> i & 1) == 0;
+    }
+    if((al >> i & 1)^(bl >> i & 1)){
+      return (al >> i & 1) == 0;
+    }
+  }
+  return false;
+};
+sort(all(lri),cp);
+
+
+ll nl = 0,nr = 0;//半開区間
+auto add =[&](ll i){
+  
+};
+
+auto erase = [&](ll i){
+
+};
+
+auto clcans = [&](ll id)->mint {
+  
+};
+vector<mint> answer(q);
+rep(i,q){
+  auto [l,r,id] = lri[i];
+  while(nr < r){
+    add(nr++);
+  }
+  while(l < nl){
+    add(--nl);
+  }
+  while(r < nr){
+    erase(--nr);
+  }
+  while(nl < l){
+    erase(nl++);
+  }
+  answer[id] = clcans(id);
+}
