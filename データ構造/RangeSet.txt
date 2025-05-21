@@ -1,0 +1,109 @@
+//ref https://atcoder.jp/contests/abc256/submissions/32647023
+/*
+verify
+insert(l,r),printSet https://atcoder.jp/contests/adt_all_20250520_1/submissions/66027406
+getRangeLength, insert(l,r) https://yukicoder.me/submissions/1087100
+mex,insert(x) erase(x) https://atcoder.jp/contests/abc330/submissions/66027280
+*/
+template<class T>
+struct RangeSet{
+  set<pair<T,T>> se;
+  T TINF;
+
+  RangeSet(T tinf):TINF{tinf}{ //INFの値を定義する
+    se.emplace(-TINF,-TINF);
+    se.emplace(TINF,TINF);
+  }
+  T insert(T l,T r) {//半開区間
+    auto itl = se.upper_bound({l,TINF}), itr = se.upper_bound({r,TINF});
+    if (itl != se.begin() && (--itl)->second < l) itl++;
+    T ret = T{0};
+    T minus = T{0};
+    if (itl != itr) {
+        l = min(l , itl->first);
+        r = max(r, prev(itr)->second);
+        minus += itl->second - itl->first;
+        minus += itr->second - itr->first;
+        se.erase(itl,itr);
+    }
+    se.insert({l,r});
+    ret += r-l;
+    ret -= minus;
+    return ret;
+  }
+
+  T insert(T x){
+    return insert(x,x+1);
+  }
+
+  bool count(T x){
+    auto it = prev(se.lower_bound({x+1,x+1}));
+    return (it->first <= x && x < it->second);
+  }
+
+  //ref https://mugen1337.github.io/procon/DataStructure/RangeSet.hpp
+  //減少量(正の値)を返す
+  T erase(T l,T r){ 
+    assert(l<r);
+    auto ite=prev(se.lower_bound({l+1,l+1}));
+    if(ite->first<=l and r<=ite->second){
+      // 完全に1つの区間に包含されている
+      if(ite->first<l)  se.emplace(ite->first,l);
+      if(r<ite->second) se.emplace(r,ite->second);
+      se.erase(ite);
+      return r-l;
+    }
+
+    T ret=T(0);
+    if(ite->first<=l and l<=ite->second){
+      ret += ite->second -l;
+      if(ite->first<l) se.emplace(ite->first,l);
+      ite=se.erase(ite);// 次へ
+    }else ite=next(ite);
+
+    while(ite->second<=r){
+      ret += ite->second - ite->first;
+      ite=se.erase(ite);
+    }
+    // 右端が区間の間にあるか
+    if(ite->first<=r and r<ite->second){
+      ret += r-ite->first;
+      se.emplace(r,ite->second);
+      se.erase(ite);
+    }
+    return ret;
+  }
+
+  T erase(T x){
+    return erase(x,x+1);
+  }
+  // number of range
+  int size(){
+    return (int)se.size()-2;
+  }
+  T getRangeLength(T x){
+    auto it = prev(se.lower_bound({x+1,x+1}));
+    if(it->first <= x && x < it->second){
+      return it->second - it->first;
+    }else{
+      return T{0};
+    }
+  }
+  vector<pair<T,T>> printSet(){
+    vector<pair<T,T>>ret;
+    for(const auto&[l,r]:se){
+      if(l == -TINF || l == TINF)continue;
+      ret.emplace_back(l,r);
+    }
+    return ret;
+  }
+
+  T mex(T x = 0){
+    auto [nowf,nows] = *prev(se.lower_bound({x+1,x+1}));
+    if(nowf <=x  && x < nows){
+      return nows;
+    }else{
+      return x;
+    }
+  }
+};
