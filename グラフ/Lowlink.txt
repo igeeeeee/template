@@ -67,6 +67,7 @@ struct Lowlink{
   vector<vector<ll>> bc;
   vector<ll> bc_id;
   //二重頂点連結分解
+  //関節点で切る。辺の集合が得られる。
   void bcc(){
     bc_id = vector<ll>(m,-1);
     vector<ll> used(n);
@@ -102,6 +103,7 @@ struct Lowlink{
 
   //二重辺連結分解 build()した後
   //cに各頂点がどのグループに属するか格納される
+  //橋を含まない頂点集合に分解する
   ll two_edge_connect_component(){
     //~~~~~~二重辺連結分解~~~~~~~~~~~
     // 計算量 O(n+m)
