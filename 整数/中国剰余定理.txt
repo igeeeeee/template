@@ -1,29 +1,31 @@
 //返り値gcd(a,b)
 //ax + by = gcd(a,b)を満たすx,yを参照で返す
 ll extGCD(ll a,ll b,ll &x, ll&y){
-	if(b == 0){
-		x = 1;
-		y = 0;
-		return a;
-	}
-	ll d = extGCD(b,a % b,y,x);
-	y -= a/b * x;
-	return d;
+  if(b == 0){
+    x = 1;
+    y = 0;
+    return a;
+  }
+  ll d = extGCD(b,a % b,y,x);
+  y -= a/b * x;
+  return d;
 }
-
+ 
 // リターン値を (r, m) とすると解は x ≡ r (mod. m)
-// 解なしの場合は (0, -1) を返す
+// 解なしの場合は (0, 0) を返す(aclに準拠)
+// b,mの列の長さが0のときは (0, 1)を返す(aclに準拠)
 // b:あまり、m:法
 pair<ll,ll> crt(const vector<ll> &b,const vector<ll> &m){
-	assert(b.size() == m.size());
-	ll r = 0; ll lcm_m = 1;
-	rep(i,b.size()){
-		ll p,q;
-		ll d = extGCD(lcm_m,m[i],p,q);
-		if((b[i] - r) % d != 0)return {0,-1};//解なし
-		ll tmp = (b[i]-r)/d * p % (m[i]/d);//多分オーバーフロー対策
-		r += lcm_m * tmp;
-		lcm_m *= m[i]/d;
-	}
-	return {(r % lcm_m+lcm_m)%lcm_m,lcm_m};
+  assert(b.size() == m.size());
+  if((int)b.size() == 0)return {0,1};
+  ll r = 0; ll lcm_m = 1;
+  rep(i,b.size()){
+    ll p,q;
+    ll d = extGCD(lcm_m,m[i],p,q);
+    if((b[i] - r) % d != 0)return {0,0};//解なし
+    ll tmp = (b[i]-r)/d * p % (m[i]/d);//多分オーバーフロー対策
+    r += lcm_m * tmp;
+    lcm_m *= m[i]/d;
+  }
+  return {(r % lcm_m+lcm_m)%lcm_m,lcm_m};
 }
