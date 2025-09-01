@@ -6,7 +6,7 @@ struct CartesianTree {
   vector<int> par, left, right;
   
   CartesianTree(){}
-  CartesianTree(const vector<T>& v) :par(v.size(),-1),left(v.size(),-1),right(v.size(),-1){
+  CartesianTree(const vector<T>& v) :root(0),par(v.size(),-1),left(v.size(),-1),right(v.size(),-1){
     vector<int> st(v.size(),0);
     int top = 0;
     for(int i = 0;i < (int)v.size();++i){
