@@ -49,7 +49,16 @@ int main(){
 	ofstream o;
 	o.open("../output.txt");
 	each(p,words){
-		o <<"\""  << p << "\"," << endl;
+    string ret = "";
+    each(c,p){
+      if(c != '"'){
+        ret += c;
+      }else {
+        ret += "\\";
+        ret += '"';
+      }
+    }
+		o <<"\""  << ret << "\"," << endl;
 	}
 
 }
