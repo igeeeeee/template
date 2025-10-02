@@ -1,0 +1,31 @@
+// ref https://atcoder.jp/contests/abc364/editorial/10547
+//dp[i][j] = 部分集合iに含まれるターミナルを全て含むシュタイナー木の部分木の内
+// 終点がjであるものの最小コスト
+vvll dp(1<<K,vll(n,INF));
+rep(i,K)dp[1<<i][i] = 0;//最初のK個がターミナルとして指定される場合
+rep(i,1<<K){
+  //マージ
+  for(ll j = i;j >= 0;j--){
+    j&= i;
+    rep(k,n){
+      chmin(dp[i][k],dp[j][k] + dp[i-j][k]);
+    }
+  }
+  //ダイクストラ
+  // 必要ならpriority_queの部分を普通に線形探索でV^2に
+  priority_queue<pll,vpll,greater<pll>> pq;
+  rep(j,n)pq.push({dp[i][j],j});
+  while(!pq.empty()){
+    auto [len,now] = pq.top();
+    pq.pop();
+    if(dp[i][now]< len)continue;
+    
+    for(auto &p:g[now]){
+      auto [next,cost] = p;
+      if(dp[i][next] > dp[i][now] + cost){
+        dp[i][next] = dp[i][now] + cost;
+        pq.push({dp[i][next],next});
+      }
+    }
+  }
+}
