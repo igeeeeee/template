@@ -508,3 +508,32 @@ template <typename mint> struct FPS : vector<mint> {
         return sqrt_base(f, f.size());
     }
 };
+
+// Bostan-Mori
+// find [x^N] P(x)/Q(x)
+// O(K log K log N), K = max(deg(P(x)), deg(Q(x)))
+template <typename mint> mint BostanMori(const FPS<mint> &P, const FPS<mint> &Q, long long N) {
+    assert(!P.empty() && !Q.empty());
+    if (N == 0) return P[0] / Q[0];
+    
+    FPS<mint> P2{P}, minusQ{Q};
+    for (int i = 1; i < (int)Q.size(); i += 2) {
+        minusQ[i] = -minusQ[i];
+    }
+    P2 *= minusQ;
+    FPS<mint> Q2 = Q * minusQ;
+    FPS<mint> S, T;
+    if (N % 2 == 0) {
+        for (int i = 0; i * 2 < (int)P2.size(); ++i) {
+            S.emplace_back(P2[i * 2]);
+        }
+    } else {
+        for (int i = 0; i * 2 + 1 < (int)P2.size(); ++i) {
+            S.emplace_back(P2[i * 2 + 1]);
+        }
+    }
+    for (int i = 0; i * 2 < (int)Q2.size(); ++i) {
+        T.emplace_back(Q2[i * 2]);
+    }
+    return BostanMori(S, T, N >> 1);
+}
