@@ -7,9 +7,7 @@
 		"prefix": "atcoder",
 		"body": [
 "#ifdef ONLINE_JUDGE",
-"#pragma message(\"ONLINE_JUDGE ENABLED: AVX2 ON\")",
-"#pragma GCC target(\"avx2\")",
-"#pragma GCC optimize(\"O3\")",
+"#pragma GCC optimize(\"Ofast\")",
 "#pragma GCC optimize(\"unroll-loops\")",
 "#endif",
 "#include <bits/stdc++.h>",
@@ -96,6 +94,10 @@
 	"codeforces-template": {
 		"prefix": "codeforces",
 		"body": [
+"#ifdef ONLINE_JUDGE",
+"#pragma GCC optimize(\"Ofast\")",
+"#pragma GCC optimize(\"unroll-loops\")",
+"#endif",
 "#include <bits/stdc++.h>",
 "using namespace std;",
 "typedef long long ll;",
