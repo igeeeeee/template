@@ -1,10 +1,12 @@
+//RangeSetの1点版
+//若干Verifyがあやしい
 struct mexset{
   set<pair<ll,ll>> se;//両閉区間
   mexset(){
     se.emplace(-INF,-INF);
     se.emplace(INF,INF);
   } 
-
+ 
   bool count(ll x){
     auto it = prev(se.lower_bound({x+1,x+1}));
     return (it->first <= x && x <= it->second);
@@ -12,35 +14,52 @@ struct mexset{
 
   bool insert(ll x){
     auto nit = se.lower_bound({x+1,x+1});
-    auto[nextf,nexts] = *nit;
+    auto[nextl,nextr] = *nit;
     auto it = prev(nit);
-    auto[nowf,nows] = *it;
-    if(nowf <= x && x <= nows){
-      return false;
+    auto[nowl,nowr] = *it;
+    if(nowl <= x && x <= nowr){
+      return false;//すでに入っていた
     }
-    if(nows == x-1){
-      if(nextf == x+1){
+    if(nowr == x-1){
+      if(nextl == x+1){
         se.erase(it);
         se.erase(nit);
-        se.emplace(nowf,nexts);
+        se.emplace(nowl,nextr);
       }else{
         se.erase(it);
-        se.emplace(nowf,x);
+        se.emplace(nowl,x);
       }
     }else{
-      if(nextf == x+1){
+      if(nextl == x+1){
         se.erase(nit);
-        se.emplace(x,nexts);
+        se.emplace(x,nextr);
       }else{
         se.emplace(x,x);
       }
     }
-    return true;
+    return true;//新たに追加した
   }
+
+  bool erase(ll x){
+    auto nit = se.lower_bound({x+1,x+1});
+    if(nit == se.begin())return 0;
+    auto it = prev(nit);
+    auto [nowl,nowr] = *it;
+    if(x < nowl or nowr < x)return false;//入ってなかった
+    se.erase(it);
+    if(nowl < x){
+      se.emplace(nowl,x-1);
+    }
+    if(x < nowr){
+      se.emplace(x+1,nowr);
+    }
+    return true;//削除に成功
+  }
+
   ll mex(ll x = 0){
-    auto [nowf,nows] = *prev(se.lower_bound({x+1,x+1}));
-    if(nowf <=x  && x <= nows){
-      return nows+1;
+    auto [nowl,nowr] = *prev(se.lower_bound({x+1,x+1}));
+    if(nowl <=x  && x <= nowr){
+      return nowr+1;
     }else{
       return x;
     }
