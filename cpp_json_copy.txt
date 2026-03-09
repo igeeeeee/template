@@ -2899,7 +2899,7 @@
 "    return os << X(p) << ' ' << Y(p);",
 "}",
 "",
-"R getarg(P b,P a){//ベクトルbはベクトルaを何radian回転させる必要があるか",
+"R getarg(P b,P a){//ベクトルbはベクトルaを何radian回転させる必要があるか(-pi<arg(z)<pi)",
 "  assert(sgn(abs(a)) != 0);//長さが0はだめ",
 "  return arg(b/a);",
 "}",
