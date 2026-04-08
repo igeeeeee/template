@@ -5572,6 +5572,37 @@
 		],
 		"description": "template for BinaryTrie"
 	},
+  "Trie木簡単" : {
+		"prefix": "TrieTree_easy",
+		"body": [
+"//main文に貼れる用",
+"// vector<string> s(n) を受け取ったものとする",
+"",
+"struct Node{",
+"  ll cnt = 0;//そのNodeを通る個数",
+"  ll ac = 0;//そのNodeで受理される個数",
+"  unordered_map<char,ll> to;//vectorにすると速い",
+"  Node(){}//vectorにしたらここで初期化",
+"};",
+"vector<Node> trie;",
+"trie.emplace_back(Node());",
+"rep(i,n){",
+"  ll v = 0;",
+"  trie[v].cnt++;",
+"  each(p,s[i]){",
+"    if(!trie[v].to.contains(p)){",
+"      trie[v].to[p] = sz(trie);",
+"      trie.emplace_back(Node());",
+"    }",
+"    v = trie[v].to[p];",
+"    trie[v].cnt++;",
+"  }",
+"  trie[v].ac++;",
+"}",
+		],
+		"description": "template for Trie木簡単"
+	},
+
   "a" : {
 		"prefix": "TEMPLATE",
 		"body": [
@@ -5579,5 +5610,6 @@
 		],
 		"description": "template for "
 	},
+	
 	
 }
