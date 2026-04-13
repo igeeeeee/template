@@ -1,0 +1,41 @@
+//メモ段階
+
+struct Big2 {
+  ll d1 = INF, d2 = INF;
+  ll i1 = -1;
+  
+  void insert(ll d,ll i){
+    if(i == i1){
+      chmax(d1,d);
+      return ;
+    }
+    if(d2 >= d)return ;//同じは先優先
+    d2 = d;
+    if(d1 < d2){
+      swap(d1,d2);
+      i1 = i;
+    }
+  }
+};
+
+//最小値版
+挿入できたらtrueが返ってきたりすると嬉しそう
+2番めのiも欲しい時があるので持ったほうが良いかも
+struct Small2 {
+  ll d1 = INF, d2 = INF;
+  ll i1 = -1,i2 = -1;
+  
+  bool insert(ll d,ll i){
+    if(i == i1){
+      return chmin(d1,d);
+    }
+    if(d2 <= d)return false;//同じは先優先
+    d2 = d;
+    i2 = i;
+    if(d1 > d2){
+      swap(d1,d2);
+      swap(i1,i2);
+    }
+    return true;
+  }
+};
