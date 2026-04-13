@@ -1,0 +1,67 @@
+//verify https://atcoder.jp/contests/abc453/submissions/74928640
+template<class T>
+struct PST{
+  int n, siz;
+  T e;
+  function<T(T,T)> op;
+
+  struct Node {
+    Node *left, *right;
+    T v;
+
+    Node(const T& _e) : left(nullptr), right(nullptr), v(_e) {}
+    Node(Node* l, Node* r, const T& _v) : left(l), right(r), v(_v) {}
+  };
+
+  PST(int _n, T _e, function<T(T,T)> _op)
+      : n(_n), e(_e), op(_op) {
+    siz = 1;
+    while (siz < n) siz <<= 1;
+  }
+
+  Node* make_node(Node* left, Node* right) {
+    T val = e;
+    if (left) val = op(val, left->v);
+    if (right) val = op(val, right->v);
+    return new Node(left, right, val);
+  }
+
+  Node* update(Node* node, int a, int b, int p, T x) {
+    if (b <= p || p + 1 <= a) return node;
+
+    if (a + 1 == b) {
+      return new Node(nullptr, nullptr, x);
+    }
+
+    int c = (a + b) >> 1;
+
+    Node* left = node ? node->left : nullptr;
+    Node* right = node ? node->right : nullptr;
+
+    if (p < c) {
+      left = update(left, a, c, p, x);
+    } else {
+      right = update(right, c, b, p, x);
+    }
+
+    return make_node(left, right);
+  }
+
+  Node* update(Node* root, int p, T x) {
+    return update(root, 0, siz, p, x);
+  }
+
+  T query(int l, int r, Node* node, int a, int b) const {
+    if (!node || b <= l || r <= a) return e;
+    if (l <= a && b <= r) return node->v;
+    int c = (a + b) >> 1;
+    return op(
+      query(l, r, node->left, a, c),
+      query(l, r, node->right, c, b)
+    );
+  }
+
+  T query(Node* root, int l, int r) const {
+    return query(l, r, root, 0, siz);
+  }
+};
