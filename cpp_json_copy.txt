@@ -5916,6 +5916,30 @@
 		],
 		"description": "template for Segment Tree Beats"
 	},
+  "平方分割" : {
+		"prefix": "HeihouBunkatu_memo",
+		"body": [
+"// [l, r) を処理する基本形、Bはブロックの長さ",
+"while(l < r && l % B != 0) {",
+"  // 左端の端数の処理",
+"",
+"  l++;",
+"}",
+"",
+"while(l + B <= r) {",
+"  // ブロック丸ごと処理の処理",
+"",
+"  l += B;",
+"}",
+"",
+"while(l < r) {",
+"  // 右端の端数を愚直の処理",
+"",
+"  l++;",
+"}",
+		],
+		"description": "template for 平方分割"
+	},
   "a" : {
 		"prefix": "TEMPLATE",
 		"body": [
@@ -5924,5 +5948,5 @@
 		"description": "template for "
 	},
 	
-
+	
 }

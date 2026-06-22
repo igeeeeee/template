@@ -1,0 +1,19 @@
+//verify https://atcoder.jp/contests/awc0096/submissions/76895235
+// [l, r) を処理する基本形、Bはブロックの長さ
+while(l < r && l % B != 0) {
+  // 左端の端数の処理
+
+  l++;
+}
+
+while(l + B <= r) {
+  // ブロック丸ごと処理の処理
+
+  l += B;
+}
+
+while(l < r) {
+  // 右端の端数を愚直の処理
+
+  l++;
+}
