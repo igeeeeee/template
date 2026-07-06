@@ -4,7 +4,7 @@
 namespace bmp = boost::multiprecision;
 using Bint = bmp::cpp_int;
 
-
+// sudo apt install libboost-all-dev
 
 
 
