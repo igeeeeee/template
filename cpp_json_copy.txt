@@ -5999,13 +5999,68 @@
 		"description": "template for BSGS"
 	},
 
-  "a" : {
+  "make_simple_graph" : {
+		"prefix": "Make_Simple_graph",
+		"body": [
+"void make_simple_graph(){",
+"  random_device seed_gen;",
+"  mt19937_64 rnd(seed_gen());",
+"  uniform_int_distribution<ll> dN(2, 5);",
+"  ll n = dN(rnd);",
+"",
+"  vector<pair<ll, ll>> edges;",
+"  set<pair<ll, ll>> used;",
+"",
+"  // ランダムな全域木を作る",
+"  // 各頂点 i を、0 ... i-1 のどれかにつなぐ",
+"  for (ll i = 1; i < n; i++) {",
+"      uniform_int_distribution<ll> dp(0, i - 1);",
+"      ll p = dp(rnd);",
+"",
+"      edges.emplace_back(p, i);",
+"      used.emplace(p, i);",
+"  }",
+"",
+"  // 木に含まれていない辺を列挙",
+"  vector<pair<ll, ll>> candidates;",
+"",
+"  for (ll u = 0; u < n; u++) {",
+"      for (ll v = u + 1; v < n; v++) {",
+"          if (!used.contains({u, v})) {",
+"              candidates.emplace_back(u, v);",
+"          }",
+"      }",
+"  }",
+"",
+"  shuffle(candidates.begin(), candidates.end(), rnd);",
+"",
+"  // 追加する辺の本数",
+"  // uniform_int_distribution<ll> dc(0, candidates.size());",
+"  uniform_int_distribution<ll> dc(0, min((int)candidates.size(),20));",
+"  ll additional = dc(rnd);",
+"",
+"  for (ll i = 0; i < additional; i++) {",
+"      edges.push_back(candidates[i]);",
+"  }",
+"",
+"  // 入力順にも依存していないか確認するため、辺順をシャッフル",
+"  shuffle(edges.begin(), edges.end(), rnd);",
+"",
+"  cout << n << \" \" << edges.size() << '\n';",
+"",
+"  for (auto [u, v] : edges) {",
+"      cout << u + 1 << \" \" << v + 1 << '\n';",
+"  }",
+"}",
+		],
+		"description": "template for making a simple graph"
+	},
+	"a" : {
 		"prefix": "TEMPLATE",
 		"body": [
 	
 		],
 		"description": "template for "
 	},
-	
 	
 }
