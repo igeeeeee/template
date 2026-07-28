@@ -1,41 +1,62 @@
-//メモ段階
-
-struct Big2 {
+struct Min2 {
   ll d1 = INF, d2 = INF;
-  ll i1 = -1;
-  
-  void insert(ll d,ll i){
-    if(i == i1){
-      chmax(d1,d);
-      return ;
+  ll i1 = -1, i2 = -1;
+
+  // 異なる index について、小さい値を2つ保持する
+  // 同値の場合は先に入っていたものを優先する
+  bool insert(ll d, ll i) {
+    if (i == i1) {
+      return chmin(d1, d);
     }
-    if(d2 >= d)return ;//同じは先優先
+
+    if (d2 <= d) {
+      return false;
+    }
+
     d2 = d;
-    if(d1 < d2){
-      swap(d1,d2);
-      i1 = i;
+    i2 = i;
+
+    if (d2 < d1) {
+      swap(d1, d2);
+      swap(i1, i2);
     }
+
+    return true;
+  }
+
+  // index i 以外で最小の値
+  ll get_except(ll i) const {
+    return i1 != i ? d1 : d2;
   }
 };
 
-//最小値版
-挿入できたらtrueが返ってきたりすると嬉しそう
-2番めのiも欲しい時があるので持ったほうが良いかも
-struct Small2 {
-  ll d1 = INF, d2 = INF;
-  ll i1 = -1,i2 = -1;
-  
-  bool insert(ll d,ll i){
-    if(i == i1){
-      return chmin(d1,d);
+
+struct Max2 {
+  ll d1 = -INF, d2 = -INF;
+  ll i1 = -1, i2 = -1;
+
+  // 異なる index について、大きい値を2つ保持する
+  // 同値の場合は先に入っていたものを優先する
+  bool insert(ll d, ll i) {
+    if (i == i1) {
+      return chmax(d1, d);
     }
-    if(d2 <= d)return false;//同じは先優先
+
+    if (d2 >= d) return false;
+
     d2 = d;
     i2 = i;
-    if(d1 > d2){
-      swap(d1,d2);
-      swap(i1,i2);
+
+    if (d1 < d2) {
+      swap(d1, d2);
+      swap(i1, i2);
     }
+
     return true;
+  }
+
+  // index i 以外で最大の値
+  ll get_except(ll i) const {
+    return i1 != i ? d1 : d2;
   }
 };
