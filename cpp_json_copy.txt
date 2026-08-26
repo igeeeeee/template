@@ -6127,7 +6127,18 @@
 		],
 		"description": "template for Max2"
 	},
-	"a" : {
+	"座圧" : {
+		"prefix": "Zaatsu",
+		"body": [
+"sort(all(ord));",
+"UNIQUE(ord);",
+"auto getid = [&](ll _x){",
+"  return lower_bound(all(ord),_x) - ord.begin();",
+"};",
+		],
+		"description": "template for 座圧"
+	},
+  "a" : {
 		"prefix": "TEMPLATE",
 		"body": [
 	
