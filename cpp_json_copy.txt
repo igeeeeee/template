@@ -6093,7 +6093,7 @@
 		"description": "template for Min2"
 	},
 	"Max2" : {
-		"prefix": "Max2",
+		"prefix": "Max2_top2",
 		"body": [
 "struct Max2 {",
 "  ll d1 = -INF, d2 = -INF;",
