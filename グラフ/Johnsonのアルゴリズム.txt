@@ -1,0 +1,99 @@
+//負の閉検出、負の辺ありで単一始点最短経路
+ 
+struct Edge{
+ ll from;
+ ll to;
+ ll cost;
+};
+ 
+// 負の閉路が存在する場合 true を返し, 負閉路の影響を受ける頂点は -INF にセットされる
+// dist は頂点数と同じサイズ, 全要素 INF で初期化しておく
+// startからgoalの経路知りたいときは適宜変更
+bool BellmanFord(vector<Edge> &edges,vector<ll> &dist,ll start,ll goal = -1){
+ dist[start] = 0;
+ 
+ vector<ll> parent(dist.size(),-1);
+ 
+ rep(i,dist.size()){
+   bool changed = false;
+   for(auto &p:edges){
+     if(dist[p.from] == INF){
+       continue;
+     }
+     if(dist[p.from] + p.cost < dist[p.to]){
+       dist[p.to] = dist[p.from] + p.cost;
+       parent[p.to] = p.from;//直前の頂点を記憶
+       changed = true;
+     }
+   }
+ 
+   //頂点の更新がなくなったら終了
+   if(changed == false){
+     return false;
+   }
+ }
+ 
+ //頂点数だけ更に繰り返して負の閉路を受ける点を-INFにしていく
+ rep(i,dist.size()){
+   for(auto &p:edges){
+     if(dist[p.from] == INF){
+       continue;
+     }
+     //まだ更新されるってことは負の閉路の影響をうけて無限に小さくなってしまう
+     if(dist[p.from] + p.cost < dist[p.to]){
+       dist[p.to] = -INF;
+     }
+   }
+ }
+ vector<ll> ret;
+ if(goal != -1 && dist[goal] != INF && dist[goal] != -INF){
+   for(ll i = goal;i != -1;i = parent[i]){
+     ret.push_back(i);
+   }
+ }
+ reverse(all(ret));
+ //必要ならretを出力してstartからgoalまでの経路を出力する
+ 
+ 
+ return true;
+}
+
+// O(NM + N(N+M)logN) で全頂点対の最短経路長を計算
+// ref https://yukicoder.me/problems/no/3653/editorial
+vvll Johnson(ll n,vector<Edge> &edges){
+  //超頂点の追加
+  vvll ret(n,vll(n,INF));
+  rep(i,n){
+    edges.push_back({n,i,0});
+  }
+  n++;
+  vll h(n,INF);
+  bool is_loop = BellmanFord(edges,h,n-1);
+  if(is_loop){
+    return ret;
+  }
+  n--;//超頂点削除
+  rep(i,n)edges.pop_back();
+  priority_queue<pll,vpll,greater<pll>> pq;
+  vvpll g(n);
+  for(auto &[from,to,cost]:edges){
+    g[from].push_back({to,cost+h[from]-h[to]});
+  }
+  rep(i,n){
+    ret[i][i] = 0;
+    pq.emplace(ret[i][i],i);
+    while(!pq.empty()){
+      auto [len,now] = pq.top();
+      pq.pop();
+      if(ret[i][now] < len)continue;
+      for(auto&[next,movecost]:g[now]){
+        if(ret[i][next] > ret[i][now] + movecost){
+          ret[i][next] = ret[i][now] + movecost;
+          pq.emplace(ret[i][next],next);
+        }
+      }
+    }
+    rep(j,n)ret[i][j]+=-h[i]+h[j];
+  }
+  return ret;
+}
