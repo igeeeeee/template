@@ -9,7 +9,7 @@ struct DisjointSparseTable{
   T e; //単位元 初期化に使われるやつ
   function<T(T,T)> op;
   DisjointSparseTable(){};
-  DisjointSparseTable(vector<T> x,T _e,function<T(T,T)> _op):e(_e),op(_op),a(x){
+  DisjointSparseTable(vector<T> x,T _e,function<T(T,T)> _op):a(x),e(_e),op(_op){
     siz = 1;
     h = 0;
     while(siz < sz(x)){
