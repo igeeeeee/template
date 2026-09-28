@@ -13,12 +13,17 @@ struct EulerTour{
   void dfs_euler(vector<vector<ll>> &g,ll v){
     fa[v] = euler_tour.size();
     euler_tour.push_back({depth[v],v});
+    bool leaf = true;
     for(auto &p:g[v]){
       if(depth[p] == INF){
+        leaf = false;
         depth[p] = depth[v] + 1;
         dfs_euler(g,p);
         euler_tour.push_back({depth[v],v});
       }
+    }
+    if(leaf){//葉も2回現れるように
+      euler_tour.push_back({depth[v],v});
     }
     la[v] = euler_tour.size()-1;
   }
