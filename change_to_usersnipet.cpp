@@ -51,11 +51,13 @@ int main(){
 	each(p,words){
     string ret = "";
     each(c,p){
-      if(c != '"'){
-        ret += c;
-      }else {
+      if(c == '"'){
         ret += "\\";
         ret += '"';
+      }else if(c == '\\'){
+        ret += "\\\\";
+      }else{
+        ret += c;
       }
     }
 		o <<"\""  << ret << "\"," << endl;
