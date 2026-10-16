@@ -6,6 +6,7 @@
 	"atcoder-template": {
 		"prefix": "atcoder",
 		"body": [
+"// Templates and Snippets -> https://github.com/igeeeeee/template",
 "#ifdef ONLINE_JUDGE",
 "#pragma GCC optimize(\"Ofast\")",
 "#pragma GCC optimize(\"unroll-loops\")",
@@ -151,6 +152,7 @@
 	"codeforces-template": {
 		"prefix": "codeforces",
 		"body": [
+"// Templates and Snippets -> https://github.com/igeeeeee/template",
 "#ifdef ONLINE_JUDGE",
 "#pragma GCC optimize(\"Ofast\")",
 "#pragma GCC optimize(\"unroll-loops\")",
