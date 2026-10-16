@@ -6476,6 +6476,44 @@
 		],
 		"description": "template for 閉路検出"
 	},
+  "lazy_segtree template" : {
+		"prefix": "Lazy_segtree_template",
+		"body": [
+"using S = ;",
+"using F = ;",
+"auto op = [](S u, S v) -> S {",
+"  return ;",
+"};",
+"auto e = []() -> S {",
+"  return ;",
+"};",
+"auto mapping = [](F f,S u) -> S {",
+"  return ;",
+"};",
+"auto composition = [](F f,F g) -> F {",
+"  return ;",
+"};",
+"auto ID = []() -> F {",
+"  return ;",
+"};",
+"lazy_segtree<S,op,e,F,mapping,composition,ID> ;",
+		],
+		"description": "template for lazy_segtree_template "
+	},
+  "segtree_template" : {
+		"prefix": "Segtree_template",
+		"body": [
+"using S = ;",
+"auto op = [](S u,S v)-> S {",
+"  return ;",
+"};",
+"auto e = []() -> S {",
+"  return ;",
+"};",
+"segtree<S,op,e> ;",
+		],
+		"description": "template for segtree_template "
+	},
   "a" : {
 		"prefix": "TEMPLATE",
 		"body": [

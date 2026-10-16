@@ -1,0 +1,18 @@
+using S = ;
+using F = ;
+auto op = [](S u, S v) -> S {
+  return ;
+};
+auto e = []() -> S {
+  return ;
+};
+auto mapping = [](F f,S u) -> S {
+  return ;
+};
+auto composition = [](F f,F g) -> F {
+  return ;
+};
+auto ID = []() -> F {
+  return ;
+};
+lazy_segtree<S,op,e,F,mapping,composition,ID> ;

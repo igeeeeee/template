@@ -1,0 +1,8 @@
+  using S = ;
+  auto op = [](S u,S v)-> S {
+    return ;
+  };
+  auto e = []() -> S {
+    return ;
+  };
+  segtree<S,op,e> ;
