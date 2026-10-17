@@ -10,4 +10,6 @@ See the individual files for details.
 生成AIで書いたものもあるので提出時はリンクを貼ってください。
 親ディレクトリのリンクでも良さそう。
 
+https://x.com/chokudai/status/2110311285149872610
+
 [AtCoderのルール20261014](https://info.atcoder.jp/entry/llm-rules-ja?_gl=1*8or59b*_ga*MTQ0MTE2OTk4Mi4xNzQ1MDQ5MDE2*_ga_RC512FD18N*czE3OTIyMDgwNDckbzE5NTMkZzEkdDE3OTIyMTMxODYkajYwJGwwJGgw)
