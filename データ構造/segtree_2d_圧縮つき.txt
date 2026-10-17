@@ -1,0 +1,238 @@
+// 使い方
+/*
+using ll = long long;
+
+ll op(ll a, ll b) { return a + b; }
+ll e() { return 0; }
+
+vector<pair<ll, ll>> points = {
+    {1, 1}, {2, 2}, {3, 3}, {4, 4}
+};
+vector<ll> a = {10, 20, 30, 40};
+
+segtree2d<ll, op, e> seg(points, a);
+
+seg.set(2, 2, 100);
+seg.apply(3, 3, 5);
+
+cout << seg.get(2, 2) << endl;       // 100
+cout << seg.prod(1, 4, 1, 4) << endl; // 145
+cout << seg.all_prod() << endl;      // 185
+/*
+
+
+// Fractional Cascadingを用いた疎な2次元セグメント木。
+// opは結合律と交換律を満たし、e()は単位元を返す必要がある。
+// 点の座標は構築時に確定させる。値は構築後もオンラインで更新可能。
+// 入力に同じ座標(x,y)が複数ある場合、構築時にopで統合する。
+// 計算量（Nは登録された点の数）：
+//   構築 O(N log N)、set/apply/prod O(log^2 N)、get O(log N)、
+//   count O(log N)、all_prod O(1)、空間 O(N log N)。
+// 矩形の指定は半開区間 [lx, rx) × [ly, ry)。
+template<class S, S (*op)(S,S), S (*e)(), class Coord = long long>
+struct segtree2d{
+  using point_type = pair<Coord,Coord>;
+
+private:
+  int n = 0;
+  int siz = 1;
+  vector<Coord> xs, all_y;
+  vector<point_type> points; // (x,y)順にソート済み、重複なし
+  vector<S> values; // 各点の値
+  vector<int> start; // 各ノードのY方向の葉のフラット配列内オフセット
+  vector<int> to_left; // 順位の累積対応表（Fractional Cascading用）
+  vector<int> root_pos; // 各点の根ノード内でのY方向の順位
+  vector<S> tree; // Y方向セグメント木を連結した配列
+
+  int x_index(Coord x) const {
+    return int(lower_bound(xs.begin(), xs.end(), x) - xs.begin());
+  }
+  int point_index(Coord x, Coord y) const {
+    auto it = lower_bound(points.begin(), points.end(), point_type{x, y});
+    assert(it != points.end() && *it == point_type(x, y));
+    return int(it - points.begin());
+  }
+  int node_size(int k) const { return start[k + 1] - start[k]; }
+
+  // Y座標が同じでも、異なる点はそれぞれ専用の葉を持つ。
+  void set_y(int k, int j, S v) {
+    int m = node_size(k), off = 2 * start[k];
+    int t = m + j;
+    tree[off + t] = v;
+    while (t > 1) {
+      t >>= 1;
+      tree[off + t] = op(tree[off + 2 * t], tree[off + 2 * t + 1]);
+    }
+  }
+  S prod_y(int k, int a, int b) const {
+    int m = node_size(k), off = 2 * start[k];
+    S left = e(), right = e();
+    a += m;
+    b += m;
+    while (a < b) {
+      if (a & 1) left = op(left, tree[off + a++]);
+      if (b & 1) right = op(tree[off + --b], right);
+      a >>= 1;
+      b >>= 1;
+    }
+    return op(left, right);
+  }
+  // 親のYリスト内の順位を左右の子のYリスト内の順位に変換する。
+  void split_rank(int k, int a, int b,
+                  int& la, int& lb, int& ra, int& rb) const {
+    int base = start[k];
+    int offset = to_left[base];
+    la = to_left[base + a] - offset;
+    lb = to_left[base + b] - offset;
+    ra = a - la;
+    rb = b - lb;
+  }
+  void set_index(int id, S v) {
+    values[id] = v;
+    int k = 1;
+    int p = root_pos[id];
+    while (true) {
+      set_y(k, p, v);
+      if (k >= siz) break;
+      int base = start[k];
+      int lrank = to_left[base + p] - to_left[base];
+      bool left = to_left[base + p + 1] != to_left[base + p];
+      p = left ? lrank : p - lrank;
+      k = left ? 2 * k : 2 * k + 1;
+    }
+  }
+  S prod_rec(int k, int nl, int nr, int ql, int qr,
+                    int a, int b) const {
+    if (a == b || qr <= nl || nr <= ql) return e();
+    if (ql <= nl && nr <= qr) return prod_y(k, a, b);
+    int la, lb, ra, rb;
+    split_rank(k, a, b, la, lb, ra, rb);
+    int mid = (nl + nr) / 2;
+    return op(prod_rec(2 * k, nl, mid, ql, qr, la, lb),
+              prod_rec(2 * k + 1, mid, nr, ql, qr, ra, rb));
+  }
+  int count_rec(int k, int nl, int nr, int ql, int qr,
+                      int a, int b) const {
+    if (a == b || qr <= nl || nr <= ql) return 0;
+    if (ql <= nl && nr <= qr) return b - a;
+    int la, lb, ra, rb;
+    split_rank(k, a, b, la, lb, ra, rb);
+    int mid = (nl + nr) / 2;
+    return count_rec(2 * k, nl, mid, ql, qr, la, lb) +
+           count_rec(2 * k + 1, mid, nr, ql, qr, ra, rb);
+  }
+  void build(const vector<point_type>& pts,
+             const vector<S>* initial) {
+    assert(!initial || pts.size() == initial->size());
+    // 同じ座標の点をソート・統合し、set(x,y,v)の対象を一意にする。
+    vector<int> order(pts.size());
+    iota(order.begin(), order.end(), 0);
+    sort(order.begin(), order.end(), [&](int a, int b) {
+      return pts[a] < pts[b];
+    });
+    for (int id : order) {
+      const S val = initial ? (*initial)[id] : e();
+      if (!points.empty() && points.back() == pts[id]) {
+        values.back() = op(values.back(), val);
+      } else {
+        points.push_back(pts[id]);
+        values.push_back(val);
+      }
+    }
+    n = int(points.size());
+    for (auto [x, y] : points) xs.push_back(x);
+    xs.erase(unique(xs.begin(), xs.end()), xs.end());
+    while (siz < int(xs.size())) siz <<= 1;
+    // 各点をX方向のすべての祖先ノードのYリストに登録する。
+    start.assign(2 * siz + 1, 0);
+    vector<int> xi(n);
+    for (int id = 0; id < n; ++id) {
+      xi[id] = x_index(points[id].first);
+      for (int k = siz + xi[id]; k; k >>= 1) ++start[k];
+    }
+    for (int k = 1; k <= 2 * siz; ++k) start[k] += start[k - 1];
+    // 累積和計算後、ノードkが管理する範囲は[start[k], start[k+1])。
+    // ノードごとの要素数の累積和を、開始位置を表す形式に調整する。
+    // start[0]は0で、ノード番号は1から始まる。
+    // 配列内でずらして、start[k] = sum_{i < k} count[i] とする。
+    for (int k = 2 * siz; k >= 1; --k) start[k] = start[k - 1];
+    start[0] = 0;
+    const int total = start[2 * siz];
+    tree.assign(2 * total, e());
+    to_left.assign(start[siz] + 1, 0);
+    root_pos.assign(n, 0);
+    vector<int> cursor = start;
+    order.resize(n);
+    iota(order.begin(), order.end(), 0);
+    sort(order.begin(), order.end(), [&](int a, int b) {
+      if (points[a].second != points[b].second)
+        return points[a].second < points[b].second;
+      return points[a].first < points[b].first;
+    });
+    all_y.reserve(n);
+    for (int id : order) {
+      all_y.push_back(points[id].second);
+      int child = -1;
+      for (int k = siz + xi[id]; k; k >>= 1) {
+        int j = cursor[k]++ - start[k];
+        tree[2 * start[k] + node_size(k) + j] = values[id];
+        if (child != -1 && child == 2 * k)
+          to_left[start[k] + j + 1] = 1;
+        if (k == 1) root_pos[id] = j;
+        child = k;
+      }
+    }
+    partial_sum(to_left.begin(), to_left.end(), to_left.begin());
+    // 各Y方向セグメント木を配列上で構築する。
+    for (int k = 1; k < 2 * siz; ++k) {
+      int m = node_size(k), off = 2 * start[k];
+      for (int j = m - 1; j > 0; --j)
+        tree[off + j] = op(tree[off + 2 * j], tree[off + 2 * j + 1]);
+    }
+  }
+
+public:
+  segtree2d() { build({}, nullptr); }
+  explicit segtree2d(const vector<point_type>& points) {
+    build(points, nullptr);
+  }
+  segtree2d(const vector<point_type>& points,
+            const vector<S>& values) {
+    build(points, &values);
+  }
+  int size() const { return n; }  // 重複を除いた座標の個数
+  void set(Coord x, Coord y, S value) {
+    set_index(point_index(x, y), value);
+  }
+  S get(Coord x, Coord y) const {
+    return values[point_index(x, y)];
+  }
+  void apply(Coord x, Coord y, S value) {
+    int id = point_index(x, y);
+    set_index(id, op(values[id], value));
+  }
+  S prod(Coord lx, Coord rx, Coord ly, Coord ry) const {
+    if (!(lx < rx) || !(ly < ry) || n == 0) return e();
+    int l = x_index(lx), r = x_index(rx);
+    int a = int(lower_bound(all_y.begin(), all_y.end(), ly) - all_y.begin());
+    int b = int(lower_bound(all_y.begin(), all_y.end(), ry) - all_y.begin());
+    return prod_rec(1, 0, siz, l, r, a, b);
+  }
+  // 両端を含む矩形[lx,rx] × [ly,ry]（+1によるオーバーフローを避ける）。
+  S prod_inclusive(Coord lx, Coord rx, Coord ly, Coord ry) const {
+    if (rx < lx || ry < ly || n == 0) return e();
+    int l = x_index(lx);
+    int r = int(upper_bound(xs.begin(), xs.end(), rx) - xs.begin());
+    int a = int(lower_bound(all_y.begin(), all_y.end(), ly) - all_y.begin());
+    int b = int(upper_bound(all_y.begin(), all_y.end(), ry) - all_y.begin());
+    return prod_rec(1, 0, siz, l, r, a, b);
+  }
+  int count(Coord lx, Coord rx, Coord ly, Coord ry) const {
+    if (!(lx < rx) || !(ly < ry) || n == 0) return 0;
+    int l = x_index(lx), r = x_index(rx);
+    int a = int(lower_bound(all_y.begin(), all_y.end(), ly) - all_y.begin());
+    int b = int(lower_bound(all_y.begin(), all_y.end(), ry) - all_y.begin());
+    return count_rec(1, 0, siz, l, r, a, b);
+  }
+  S all_prod() const { return n ? tree[1] : e(); }
+};
