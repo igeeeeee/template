@@ -13,7 +13,7 @@ vector<ll> a = {10, 20, 30, 40};
 segtree2d<ll, op, e> seg(points, a);
 
 seg.set(2, 2, 100);
-seg.apply(3, 3, 5);
+seg.apply(3, 3, 5);//点の値を op(現在値, v) に更新する
 
 cout << seg.get(2, 2) << endl;       // 100
 cout << seg.prod(1, 4, 1, 4) << endl; // 145
