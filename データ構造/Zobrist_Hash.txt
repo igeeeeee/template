@@ -1,4 +1,4 @@
-// 整数値 x にハッシュ値を割り当てる関数
+// verify https://atcoder.jp/contests/aalc001/submissions/80216395
 struct custom_hash {
     static uint64_t splitmix64(uint64_t x) {
         x += 0x9e3779b97f4a7c15;
@@ -12,49 +12,27 @@ struct custom_hash {
             chrono::steady_clock::now().time_since_epoch().count();
         return splitmix64(x + FIXED_RANDOM);
     }
-} rng;
+};
 
-//rng(x)で割り当てられる
+struct ZobristHash{
+  mt19937_64 rnd;
+  unordered_map<ll,pull,custom_hash> mp;
 
+  ZobristHash():rnd(chrono::steady_clock::now().time_since_epoch().count()){}
 
-/*
-mt19937_64 rnd(chrono::steady_clock::now().time_since_epoch().count());
+  pull operator()(ll x){
+    auto it = mp.find(x);
+    if(it != mp.end())return it->second;
+    pull h = {rnd(),rnd()};
+    mp.emplace(x,h);
+    return h;
+  }
+};
+/* 使い方 
+pullで返ってくる, hashを2本持ってfirstのXORとsecondのXORが両方一致かで判定
 
-vll rands1(n),rands2(n);
-rep(i,n){
-  rands1[i] = rnd();
-  rands2[i] = rnd();
-}
-とかして
-{rands1でxor , rands2でxor} みたいなのをハッシュとしたほうが強いみたい
-//https://codeforces.com/blog/entry/129858 でいつもの落ちた
+ZobristHash zh;
+pull a = zh(100);
+pull b = zh(-500);
+pull c = zh(100); // aと同じ値
 */
-
-//main使用例
-// Zobrist Hash
-    // hashA[i] := 数列 a の先頭から i 個分の集合を表すハッシュ値
-    int N;
-    cin >> N;
-
-    // N 個の入力を受け取って、Zobrist Hash を返す関数
-    auto hashing = [&]() -> vector<uint64_t> {
-        vector<uint64_t> hash(N + 1, 0);
-        set<long long> S;  // すでにあるかを確認する
-
-        for (int i = 0; i < N; ++i) {
-            long long x;
-            cin >> x;
-
-            // すでに含まれている場合は何もしない
-            if (S.count(x)) {
-                hash[i + 1] = hash[i];
-                continue;
-            }
-            S.insert(x);
-            hash[i + 1] = hash[i] ^ rng(x);
-        }
-        return hash;
-    };
-
-    const auto& hashA = hashing();
-    const auto& hashB = hashing();
