@@ -6,6 +6,9 @@ is dedicated to the public domain under CC0-1.0.
 Third-party code is subject to its original license.
 See the individual files for details.
 
+## スニペットについて
+cpp_json_copy.txtに記載のjsonをVsCodeのスニペットとして登録して使ってます。
+
 ## その他
 生成AIで書いたものもあるので提出時はリンクを貼ってください。
 親ディレクトリのリンクでも良さそう。
