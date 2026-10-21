@@ -1,6 +1,6 @@
 //双対セグ木
 //fm(f,g)はgにfを作用させる（ACL準拠）
-//verify https://onlinejudge.u-aizu.ac.jp/solutions/problem/DSL_2_D/review/11750602/T21140031/C++23
+// vefiry https://onlinejudge.u-aizu.ac.jp/solutions/problem/DSL_2_D/review/11750609/T21140031/C++23
 template<class M>
 struct DualSegmentTree{
   using FM = function<M(M,M)>;
