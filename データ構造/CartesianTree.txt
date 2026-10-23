@@ -1,27 +1,33 @@
 //ref https://drken1215.hatenablog.com/entry/2023/10/19/025800
-//vefify https://judge.yosupo.jp/submission/311517
+//vefify https://atcoder.jp/contests/awc0078/submissions/80278771
 template<class T> 
 struct CartesianTree {
-  int root;  
+  int root;
   vector<int> par, left, right;
   
   CartesianTree(){}
-  CartesianTree(const vector<T>& v) :root(0),par(v.size(),-1),left(v.size(),-1),right(v.size(),-1){
+  CartesianTree(const vector<T>& v,bool is_min = true):root(v.empty() ? -1 : 0),par(v.size(),-1),left(v.size(),-1),right(v.size(),-1){
+    if(v.empty())return;
+
+    auto better = [&](int i,int j)->bool{
+      return is_min ? v[i] < v[j] : v[i] > v[j];
+    };
+
     vector<int> st(v.size(),0);
     int top = 0;
     for(int i = 1;i < (int)v.size();++i){
-      if (v[st[top]] > v[i]) {
-        while (top >= 1 && v[st[top - 1]] > v[i]) --top;
+      if(better(i,st[top])){
+        while(top >= 1 && better(i,st[top-1]))--top;
         left[i] = st[top];
         par[left[i]] = i;
-        if (top == 0) {
+        if(top == 0){
           root = i;
-        } else {
-          par[i] = st[top - 1];
+        }else{
+          par[i] = st[top-1];
           right[par[i]] = i;
         }
         st[top] = i;
-      } else {
+      }else{
         par[i] = st[top];
         right[par[i]] = i;
         st[++top] = i;
