@@ -7239,7 +7239,21 @@
 		],
 		"description": "template for Slope Trick"
 	},
-    "a" : {
+  "ランレングス圧縮" : {
+		"prefix": "RLE_Ranrenngusuassyuku",
+		"body": [
+"vector<pair<char,ll>> rle;",
+"rep(i,n){",
+"  if(rle.empty()||rle.back().FI != s[i]){",
+"    rle.emplace_back(s[i],1);",
+"  }else{",
+"    rle.back().SE++;",
+"  }",
+"}",
+		],
+		"description": "template for RLE"
+	},
+  "a" : {
 		"prefix": "TEMPLATE",
 		"body": [
 	
