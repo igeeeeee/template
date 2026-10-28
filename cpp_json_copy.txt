@@ -7253,6 +7253,28 @@
 		],
 		"description": "template for RLE"
 	},
+  "Grid_ダイクストラ" : {
+		"prefix": "Grid_Daikusutora",
+		"body": [
+"vvll find(h,vll(w,INF));",
+"priority_queue<tpl3,vector<tpl3>,greater<tpl3>> pq;",
+"find[0][0] = 0;",
+"pq.emplace(0,0,0);//値,y,x",
+"while(!pq.empty()){",
+"  auto[val,nowy,nowx] = pq.top();",
+"  pq.pop();",
+"  if(val > find[nowy][nowx])continue;",
+"  rep(p,4){",
+"    ll ny = nowy + _ta[p];",
+"    ll nx = nowx + _yo[p];",
+"    if(isin(ny,nx,h,w) && chmin(find[ny][nx],find[nowy][nowx]+a[ny][nx])){",
+"      pq.emplace(find[ny][nx],ny,nx);",
+"    }",
+"  }",
+"}",
+		],
+		"description": "template for Grid_ダイクストラ"
+	},
   "a" : {
 		"prefix": "TEMPLATE",
 		"body": [
