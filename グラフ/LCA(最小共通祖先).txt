@@ -1,63 +1,4 @@
-//verify https://onlinejudge.u-aizu.ac.jp/solutions/problem/GRL_5_C/review/8911290/T21140031/C++17
-//1indexed
-template <class T>
-class SegmentTree{
-  public:
-  vector<T> tree;
-  ll siz = 0;
-  T e; //単位元 初期化に使われるやつ
-  function<T(T,T)> op;
-  function<T(T,T)> mapping = [](T a,T b){return b;};//更新に使用 デフォルトはただ更新
-
-  SegmentTree(){}
-  
-  SegmentTree(ll n,T _e,function<T(T,T)> _op):e(_e),op(_op){
-    ll i = 0;
-    while((1 << i) < n ){
-      i++;
-    }
-    tree.resize(1<<(i+1),_e);
-    siz = 1 << i;
-  }
- 
-  //更新も工夫したいやつ
-  SegmentTree(ll n,T _e,function<T(T,T)> _op,function<T(T,T)>_mapping):e(_e),op(_op),mapping(_mapping){
-    ll i = 0;
-    while((1 << i) < n ){
-      i++;
-    }
-    tree.resize(1<<(i+1),_e);
-    siz = 1 << i;
-  }
-  
-  void update(ll pos, T x){
-    pos = pos + siz;
-    tree[pos] = mapping(tree[pos],x);
-    while(pos>=2){
-      pos >>=1;
-      tree[pos] = op(tree[pos << 1|0], tree[pos<<1|1]);
-    }
-  }
-
-  //[l,r)
-  T query(ll l,ll r){
-    T retl = e,retr = e;
-    l += siz;
-    r += siz;
-    while(l < r){
-      if(l & 1)retl = op(retl,tree[l++]);//演算してから足す
-      if(r & 1)retr = op(tree[--r],retr);//演算する前に引く
-      l>>=1;r>>=1;
-    }
-    return op(retl,retr);
-  }
- 
-  T operator[](ll pos){
-    return tree[pos + siz];
-  }
-  
-};
-
+//verify https://atcoder.jp/contests/awc0150/submissions/80782425
 struct EulerTour{
   vector<ll> fa,la;//頂点vがDFS探索順で最初に現れた時間とその頂点を抜けた時間
   vector<ll> depth;
@@ -73,38 +14,46 @@ struct EulerTour{
   void dfs_euler(vector<vector<ll>> &g,ll v){
     fa[v] = euler_tour.size();
     euler_tour.push_back({depth[v],v});
+    bool leaf = true;
     for(auto &p:g[v]){
       if(depth[p] == INF){
+        leaf = false;
         depth[p] = depth[v] + 1;
         dfs_euler(g,p);
         euler_tour.push_back({depth[v],v});
       }
     }
+    if(leaf){//葉も2回現れるように
+      euler_tour.push_back({depth[v],v});
+    }
     la[v] = euler_tour.size()-1;
   }
 };
 
+// LCA用のセグ木（深さが最小の頂点を返す）
+pair<ll,ll> lca_op(pair<ll,ll> a,pair<ll,ll> b){
+  return min(a,b);
+}
+pair<ll,ll> lca_e(){
+  return {INF,INF};//1LL<<60
+}
+
 struct LCA{
-  SegmentTree<pair<ll,ll>> seg_euler;
   EulerTour et;
+  atcoder::segtree<pair<ll,ll>,lca_op,lca_e> seg_euler;
+
   LCA(){}
-  LCA(ll n,vector<vector<ll>> &g){//頂点数と隣接リスト
-    et = EulerTour(n,g);
-    
-    seg_euler = SegmentTree<pair<ll,ll>>((ll)et.euler_tour.size(),{INF,INF},[](pair<ll,ll> a,pair<ll,ll> b){return min(a,b) == a ? a : b;});
-    seg_euler_setup(seg_euler);
-  }
+  LCA(ll n,vector<vector<ll>> &g):et(n,g),seg_euler(et.euler_tour){}
 
-  //euler_tourの情報をSeg木に乗せるだけ
-  void seg_euler_setup(SegmentTree<pair<ll,ll>> &seg_euler){
-    ll siz = et.euler_tour.size();
-    rep(i,siz){
-      seg_euler.update(i,et.euler_tour[i]);
-    }
-  }
-
-  // x,yのLCA求める({深さ,頂点番号})
+  // x,yのLCA({深さ,頂点番号})
+  // uvの距離は find[u]+find[v]-2*find[lca.query(u,v).SE]
   pair<ll,ll> query(ll x,ll y){
-    return seg_euler.query(min(et.fa[x],et.fa[y]),max(et.fa[x],et.fa[y])+1);
+    return seg_euler.prod(min(et.fa[x],et.fa[y]),max(et.fa[x],et.fa[y])+1);
   }
+
+  /* uvの距離を求めるやつ
+  auto dist = [&](ll u,ll v){
+    return find[u]+find[v]-2*find[lca.query(u,v).SE];
+  };
+  */
 };

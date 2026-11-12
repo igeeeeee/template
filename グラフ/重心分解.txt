@@ -1,59 +1,73 @@
-//verify https://atcoder.jp/contests/abc291/submissions/52202269
-struct CentroidDecomposition{
+//verify https://atcoder.jp/contests/awc0150/submissions/80782425
+struct CentroidDecomposition {
   ll n;
   vector<vector<ll>> g;
-  vector<ll> used;
-  //sz:重心分解後の最大部分木に含まれる頂点の数(自分を含める)
-  //parent:重心分解後の親の頂点
-  vector<ll> sz,parent;
-  CentroidDecomposition(ll _n,vector<vector<ll>> &_g):n(_n),g(_g){
-    used.resize(n);sz.resize(n);parent.resize(n);
-  }
+  vector<ll> used, subtree_size, parent;
 
-  //DFSして部分木のサイズを計算する
-  void calcsize(ll v, ll par){
-    sz[v] = 1;// szを重心分解するたびに繰り返し使うので1で一旦初期化
-    for(auto &p:g[v]){
-      if(p != par && used[p] == 0){
-        calcsize(p,v);
-        sz[v] += sz[p];
+  CentroidDecomposition(ll n, const vector<vector<ll>>& g)
+      : n(n), g(g), used(n), subtree_size(n), parent(n, -1) {
+        build();
       }
-    }
-  }
 
-  //今の頂点、元のグラフでの親、最後の重心、今重心を探してる部分木のサイズ
-  void _build(ll v,ll par,ll root,ll siz){
-    ll nv = -1;
-    ll maxtreesiz = 0;
-    for(auto &p:g[v]){
-      if(used[p] == 1 or p == par)continue;
-      if(chmax(maxtreesiz,sz[p])){
-        nv = p;
-      }
-    }
-    if(nv == -1){
-      //出る辺がなかった. o-o-... みたいなときで、この時親はすでに重心になっているはず
-      parent[v] = root;
-      return;
-    }
-    if(2 * maxtreesiz > siz){
-      //vは部分木の重心でないので部分木サイズの一番大きい隣接点に移動
-      _build(nv,v,root,siz);
-    }else{
-      //vが部分木の重心だった
-      used[v] = 1;
-      parent[v] = root;
-      for(auto &p:g[v]){
-        if(used[p] == 0){
-          calcsize(p,v);
-          _build(p,v,v,sz[p]);
+  void build() {
+    if (n == 0) return;
+    fill(used.begin(), used.end(), 0);
+    fill(parent.begin(), parent.end(), -1);
+
+    vector<ll> dfspar(n, -1);
+    // (処理する連結成分の始点, 重心分解木の親)
+    vector<pair<ll, ll>> st{{0, -1}};
+
+    while (!st.empty()) {
+      auto [start, cp] = st.back();
+      st.pop_back();
+
+      // DFS順に頂点を列挙する
+      vector<ll> order{start};
+      dfspar[start] = -1;
+      for (ll i = 0; i < (ll)order.size(); ++i) {
+        ll v = order[i];
+        for (ll u : g[v]) {
+          if (used[u] || u == dfspar[v]) continue;
+          dfspar[u] = v;
+          order.push_back(u);
         }
       }
-    }
-  }
 
-  void build(){
-    calcsize(0,-1);
-    _build(0,-1,-1,sz[0]);
+      // 逆順に部分木サイズを計算
+      ll m = order.size();
+      for (ll i = m - 1; i >= 0; --i) {
+        ll v = order[i];
+        subtree_size[v] = 1;
+        for (ll u : g[v]) {
+          if (!used[u] && dfspar[u] == v)
+            subtree_size[v] += subtree_size[u];
+        }
+      }
+
+      // 重心を探す
+      ll centroid = -1;
+      for (ll v : order) {
+        ll mx = m - subtree_size[v]; // 親側
+        for (ll u : g[v]) {
+          if (!used[u] && dfspar[u] == v)
+            mx = max(mx, subtree_size[u]);
+        }
+        if (2 * mx <= m) {
+          centroid = v;
+          break;
+        }
+      }
+
+      // 重心を確定
+      used[centroid] = 1;
+      parent[centroid] = cp;
+
+      // 重心を取り除いた各連結成分を処理
+      for (ll u : g[centroid]) {
+        if (!used[u])
+          st.push_back({u, centroid});
+      }
+    }
   }
 };
