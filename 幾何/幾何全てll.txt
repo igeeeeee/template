@@ -48,7 +48,9 @@ int geo_compare_positive(I a, I b, I c, I d) {
     }
 }
 
+// 符号関数（整数を厳密に判定）
 int sgn(I a) { return (a > 0) - (a < 0); }
+// 一致判定（整数版では誤差を考慮せず厳密比較）
 bool eq(I a, I b) { return a == b; }
 
 struct Fraction {
@@ -81,8 +83,10 @@ struct Fraction {
     }
 };
 int sgn(const Fraction& a) { return sgn(a.num); }
+// 有理数の一致判定（厳密比較）
 bool eq(const Fraction& a, const Fraction& b) { return a == b; }
 
+// P: Point（整数座標の点・ベクトル）
 struct P {
     ll x = 0, y = 0;
     P() = default;
@@ -94,6 +98,7 @@ struct P {
     friend P operator+(P a, P b) { return {geo_narrow128(I(a.x) + b.x), geo_narrow128(I(a.y) + b.y)}; }
     friend P operator-(P a, P b) { return {geo_narrow128(I(a.x) - b.x), geo_narrow128(I(a.y) - b.y)}; }
     friend P operator-(P a) { return {geo_narrow128(-I(a.x)), geo_narrow128(-I(a.y))}; }
+    // ベクトルの d 倍
     friend P operator*(P p, ll d) { return {geo_narrow128(I(p.x) * d), geo_narrow128(I(p.y) * d)}; }
     friend P operator*(ll d, P p) { return p * d; }
     P& operator+=(P p) { return *this = *this + p; }
@@ -115,12 +120,18 @@ struct QP {
     friend ostream& operator<<(ostream& os, const QP& p) { return os << p.x << ' ' << p.y; }
 };
 using VQ = vector<QP>;
+// ベクトルの 1/d 倍（有理数座標 QP を返す）
 QP operator/(P p, ll d) { return {Fraction(p.x, d), Fraction(p.y, d)}; }
+// ベクトルの比較 x 軸で比較 -> y 軸で比較
 bool cp_x(P p, P q) { return tie(p.x, p.y) < tie(q.x, q.y); }
+// ベクトルの比較 y 軸で比較 -> x 軸で比較
 bool cp_y(P p, P q) { return tie(p.y, p.x) < tie(q.y, q.x); }
+// 有理数座標のベクトルの比較 x 軸 -> y 軸
 bool cp_x(const QP& p, const QP& q) { return p.x != q.x ? p.x < q.x : p.y < q.y; }
+// 有理数座標のベクトルの比較 y 軸 -> x 軸
 bool cp_y(const QP& p, const QP& q) { return p.y != q.y ? p.y < q.y : p.x < q.x; }
 
+// 直線 ab（異なる2点 a, b で定義）
 struct L {
     P a, b;
     L() = default;
@@ -128,10 +139,12 @@ struct L {
     friend ostream& operator<<(ostream& os, const L& l) { return os << l.a << ' ' << l.b; }
     friend istream& operator>>(istream& is, L& l) { return is >> l.a >> l.b; }
 };
+// 線分 ab
 struct S : L {
     S() = default;
     S(P a, P b) : L(a, b) {}
 };
+// 中心 p、半径 r の円
 struct C {
     P p;
     ll r = 0;
@@ -158,10 +171,13 @@ struct CL {
                  I(l.a.x) * l.b.y - I(l.a.y) * l.b.x) {}
 };
 
+// 2つのベクトルの内積
 ll dot(P p, P q) { return geo_narrow128(geo_add128(I(p.x) * q.x, I(p.y) * q.y)); }
+// 2つのベクトルの外積
 ll det(P p, P q) { return geo_narrow128(geo_sub128(I(p.x) * q.y, I(p.y) * q.x)); }
 ll norm(P p) { return dot(p, p); }
 // 整数版 rot の第2引数はラジアンではなく、反時計回りに90度回す回数。
+// ベクトルの回転（整数版は90度単位で反時計回り）
 template<class T, enable_if_t<is_integral_v<T>, int> = 0>
 P rot(P p, T quarter_turns) {
     int k = (quarter_turns % 4 + 4) % 4;
@@ -169,6 +185,12 @@ P rot(P p, T quarter_turns) {
     return p;
 }
 
+// https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=CGL_1_C&lang=jp
+// 線分 ab に対する c の位置関係
+// +1: COUNTER_CLOCKWISE（a, b, c が反時計回り）
+// -1: CLOCKWISE（時計回り）
+// +2: ONLINE_BACK（a より後方）、-2: ONLINE_FRONT（b より前方）
+//  0: ON_SEGMENT（線分 ab 上）
 int ccw(P a, P b, P c) {
     b -= a; c -= a;
     int s = sgn(det(b, c));
@@ -177,13 +199,17 @@ int ccw(P a, P b, P c) {
     if (norm(b) < norm(c)) return -2;
     return 0;
 }
+// 平行判定（整数係数の直線同士）
 bool para(const CL& a, const CL& b) {
     return geo_mul128(a.a, b.b) == geo_mul128(a.b, b.a);
 }
+// 垂直判定（整数係数の直線同士）
 bool orth(const CL& a, const CL& b) {
     return geo_add128(geo_mul128(a.a, b.a), geo_mul128(a.b, b.b)) == 0;
 }
+// 平行判定
 bool para(L a, L b) { return para(CL(a), CL(b)); }
+// 垂直判定
 bool orth(L a, L b) { return orth(CL(a), CL(b)); }
 I geo_eval(const CL& l, P p) { return geo_add128(geo_add128(geo_mul128(l.a, p.x), geo_mul128(l.b, p.y)), l.c); }
 I geo_line_norm(const CL& l) { return geo_add128(geo_mul128(l.a, l.a), geo_mul128(l.b, l.b)); }
@@ -196,34 +222,48 @@ QP geo_interpolate(P a, P v, I numerator, I denominator) {
             Fraction(geo_add128(geo_mul128(a.y, denominator), geo_mul128(v.y, numerator)), denominator)};
 }
 
+// 垂線の足（有理数座標で返す）
 QP proj(const CL& l, P p) {
     I e = geo_eval(l, p), n = geo_line_norm(l);
     return {Fraction(geo_sub128(geo_mul128(p.x, n), geo_mul128(l.a, e)), n),
             Fraction(geo_sub128(geo_mul128(p.y, n), geo_mul128(l.b, e)), n)};
 }
+// 垂線の足（有理数座標で返す）
 QP proj(L l, P p) { return proj(CL(l), p); }
+// 線対称の位置にある点（有理数座標で返す）
 QP refl(const CL& l, P p) {
     I e = geo_mul128(2, geo_eval(l, p)), n = geo_line_norm(l);
     return {Fraction(geo_sub128(geo_mul128(p.x, n), geo_mul128(l.a, e)), n),
             Fraction(geo_sub128(geo_mul128(p.y, n), geo_mul128(l.b, e)), n)};
 }
+// 線対称の位置にある点（有理数座標で返す）
 QP refl(L l, P p) { return refl(CL(l), p); }
+// 直線上に点 p があるか判定
 bool inter(const CL& l, P p) { return geo_eval(l, p) == 0; }
+// 交点を持つか判定（点 p が直線 l 上にあるか）
 bool inter(L l, P p) { return inter(CL(l), p); }
+// 点 p が線分 s 上にあるか判定
 bool inter(S s, P p) {
     if (s.a == s.b) return p == s.a;
     return det(s.b - s.a, p - s.a) == 0 && dot(p - s.a, p - s.b) <= 0;
 }
+// 2直線が交点を持つか（同一直線の場合も true）
 bool inter(const CL& l, const CL& m) {
     return !para(l, m) || (l.a == m.a && l.b == m.b && l.c == m.c);
 }
+// 2直線が交点を持つか（同一直線の場合も true）
 bool inter(L l, L m) { return inter(CL(l), CL(m)); }
+// 直線と線分が交点を持つか
 bool inter(const CL& l, S s) {
     return sgn(geo_eval(l, s.a)) * sgn(geo_eval(l, s.b)) <= 0;
 }
+// 線分と直線が交点を持つか
 bool inter(S s, const CL& l) { return inter(l, s); }
+// 直線と線分が交点を持つか
 bool inter(L l, S s) { return inter(CL(l), s); }
+// 線分と直線が交点を持つか
 bool inter(S s, L l) { return inter(l, s); }
+// 2線分が交点を持つか
 bool inter(S s, S t) {
     if (s.a == s.b) return inter(t, s.a);
     if (t.a == t.b) return inter(s, t.a);
@@ -232,17 +272,22 @@ bool inter(S s, S t) {
 }
 
 // 距離の二乗。点同士は ll、それ以外は Fraction を返す。
+// 2点間の距離（整数版は距離の二乗を返す）
 ll dist(P p, P q) { return norm(q - p); }
+// 直線と点の距離の二乗
 Fraction dist(const CL& l, P p) {
     I e = geo_eval(l, p);
     return Fraction(geo_mul128(e, e), geo_line_norm(l));
 }
+// 直線と点の距離の二乗
 Fraction dist(L l, P p) { return dist(CL(l), p); }
+// 線分と点の距離の二乗
 Fraction dist(S s, P p) {
     if (s.a == s.b || dot(p - s.a, s.b - s.a) <= 0) return Fraction(dist(s.a, p));
     if (dot(p - s.b, s.a - s.b) <= 0) return Fraction(dist(s.b, p));
     return dist(L(s), p);
 }
+// 2直線間の距離の二乗
 Fraction dist(const CL& l, const CL& m) {
     if (inter(l, m)) return Fraction(0);
     // 平行線: (c1*a2-c2*a1)^2 / (a2^2*(a1^2+b1^2))。
@@ -259,22 +304,32 @@ Fraction dist(const CL& l, const CL& m) {
     I v2 = v / g; n /= g;
     return Fraction(geo_mul128(v1, v2), geo_mul128(geo_mul128(delta.den, delta.den), n));
 }
+// 2直線間の距離の二乗
 Fraction dist(L l, L m) { return inter(l, m) ? Fraction(0) : dist(l, m.a); }
+// 2線分間の距離の二乗
 Fraction dist(S s, S t) {
     if (inter(s, t)) return Fraction(0);
     return min({dist(s, t.a), dist(s, t.b), dist(t, s.a), dist(t, s.b)});
 }
+// 直線と線分の距離の二乗
 Fraction dist(const CL& l, S s) {
     return inter(l, s) ? Fraction(0) : min(dist(l, s.a), dist(l, s.b));
 }
+// 直線と線分の距離の二乗
 Fraction dist(L l, S s) { return dist(CL(l), s); }
+// 線分と直線の距離の二乗
 Fraction dist(S s, L l) { return dist(l, s); }
+// 線分と直線の距離の二乗
 Fraction dist(S s, const CL& l) { return dist(l, s); }
 
+// 点 p が円周上にあるか判定
 bool inter(C c, P p) { return I(dist(c.p, p)) == I(c.r) * c.r; }
+// 円と直線が交点を持つか判定
 bool inter(C c, const CL& l) { return dist(l, c.p) <= Fraction(I(c.r) * c.r); }
+// 円と直線が交点を持つか判定
 bool inter(C c, L l) { return inter(c, CL(l)); }
 // 円周と線分の交差。線分全体が円の内部にある場合は false。
+// 円と線分が交点を持つか判定（線分全体が円内なら false）
 bool inter(C c, S s) {
     Fraction r2(I(c.r) * c.r);
     return dist(s, c.p) <= r2 && Fraction(max(dist(c.p, s.a), dist(c.p, s.b))) >= r2;
@@ -298,6 +353,7 @@ int inter(C c1, C c2) {
     return 0;
 }
 
+// 2直線の交点（同一直線なら代表点を1点返す）
 VQ crosspoint(const CL& l, const CL& m) {
     I d = geo_sub128(geo_mul128(l.a, m.b), geo_mul128(l.b, m.a));
     if (!d) return inter(l, m) ? VQ{geo_line_at(l)} : VQ{};
@@ -305,10 +361,12 @@ VQ crosspoint(const CL& l, const CL& m) {
              Fraction(geo_sub128(geo_mul128(l.c, m.a), geo_mul128(l.a, m.c)), d)}};
 }
 // 同一直線なら元と同様に代表点を1つ返す (交点集合全体ではない)。
+// 2直線の交点（同一直線なら代表点を1点返す）
 VQ crosspoint(L l, L m) {
     if (para(l, m)) return inter(l, m) ? VQ{QP(m.a)} : VQ{};
     return crosspoint(CL(l), CL(m));
 }
+// 直線と線分の交点（重なる場合は線分の両端）
 VQ crosspoint(const CL& l, S s) {
     if (!inter(l, s)) return {};
     if (s.a == s.b) return {QP(s.a)};
@@ -319,10 +377,14 @@ VQ crosspoint(const CL& l, S s) {
     }
     return {geo_interpolate(s.a, s.b - s.a, a, geo_sub128(a, b))};
 }
+// 線分と直線の交点
 VQ crosspoint(S s, const CL& l) { return crosspoint(l, s); }
+// 直線と線分の交点
 VQ crosspoint(L l, S s) { return crosspoint(CL(l), s); }
+// 線分と直線の交点
 VQ crosspoint(S s, L l) { return crosspoint(l, s); }
 // 重なる線分は共通部分の両端、1点で接すればその1点を返す。
+// 2線分の交点（重なる場合は共通部分の両端）
 VQ crosspoint(S s, S t) {
     if (!inter(s, t)) return {};
     if (s.a == s.b) return {QP(s.a)};
@@ -336,17 +398,20 @@ VQ crosspoint(S s, S t) {
     for (P p : points) out.emplace_back(p);
     return out;
 }
+// 垂直二等分線（整数係数 ax + by + c = 0 の CL を返す）
 CL vertical_bisector(P p, P q) {
     return CL(2 * (I(q.x) - p.x), 2 * (I(q.y) - p.y), I(norm(p)) - norm(q));
 }
 
 // 符号によらない面積の2倍。単純多角形では <= 8e18。
 // 非凸多角形の途中の累積も安全にするため、戻り値・累積とも i128。
+// 多角形の面積（整数版は符号なしの面積の2倍を返す）
 I area(const VP& p) {
     I ret = 0;
     for (size_t i = 0; i < p.size(); ++i) ret = geo_add128(ret, det(p[i], p[(i + 1) % p.size()]));
     return geo_abs128(ret);
 }
+// 点 q の多角形 p に対する内外判定: IN:2, ON:1, OUT:0
 int in_polygon(const VP& p, P q) {
     int ret = 0;
     for (size_t i = 0; i < p.size(); ++i) {
@@ -357,6 +422,7 @@ int in_polygon(const VP& p, P q) {
     }
     return ret;
 }
+// 凸包（頂点を反時計回りに返し、同一直線上の中間点は除く）
 VP convex_hull(VP p) {
     sort(p.begin(), p.end(), [](P a, P b) { return cp_x(a, b); });
     p.erase(unique(p.begin(), p.end()), p.end());
@@ -371,6 +437,7 @@ VP convex_hull(VP p) {
     return ch;
 }
 // 点が2個未満なら LLONG_MAX。入力重複があれば0。
+// 最近点対の距離（整数版は距離の二乗を返す）
 ll closest_pair(VP p) {
     sort(p.begin(), p.end(), [](P a, P b) { return cp_x(a, b); });
     for (size_t i = 1; i < p.size(); ++i) if (p[i] == p[i - 1]) return 0;
@@ -396,6 +463,7 @@ ll closest_pair(VP p) {
     return rec(0, int(p.size()));
 }
 // 空集合・1点は0。凸包 + 回転キャリパー。
+// 最遠点対の距離（整数版は距離の二乗を返す）
 ll farthest_pair(VP p) {
     VP h = convex_hull(move(p));
     int n = int(h.size());
@@ -414,10 +482,13 @@ ll farthest_pair(VP p) {
     return ret;
 }
 // 三角形部分のみ: 符号付き面積の2倍。扇形は実数版を使う。
+// 原点、点 a、点 b とで囲まれる領域の面積（三角形 ver と扇形 ver）
+// 整数版は三角形 ver の符号付き面積の2倍のみ対応。扇形 ver は例外を投げる。
 ll calc_element(P a, P b, ll /*cr*/, bool triangle) {
     if (!triangle) throw invalid_argument("geometry::calc_element: sector requires real geometry");
     return det(a, b);
 }
+// 原点=0, (π,2π] = -1, (0,π] = 1（偏角ソート用の半平面分類）
 int geo_half(P p) {
     if (p == P()) return 0;
     return p.y < 0 || (p.y == 0 && p.x > 0) ? -1 : 1;
@@ -428,11 +499,14 @@ bool geo_angle_less(P p, P q) {
 }
 
 //同じ方向の点の順番は未定義
+// ref https://github.com/drken1215/algorithm/blob/master/Geometry/arg_sort.cpp
+// 点列を偏角ソート（第3象限側から反時計回り）
 void arg_sort(VP& v) { sort(v.begin(), v.end(), geo_angle_less); }
 
 // 単純多角形と直線の共通部分を、辞書順の端点対 [l0,r0,l1,r1,...] で返す。
 // border=false は辺上だけの区間・孤立点を除く (返す端点は区間の閉包)。
 // border=true では孤立した接点を [p,p] として含める。O(n log n)。
+// 直線が多角形に切り取られる区間
 VQ cut(const VP& p, const CL& l, bool border = true) {
     struct Event { QP p; int toggle, boundary; };
     vector<Event> events;
@@ -470,12 +544,14 @@ VQ cut(const VP& p, const CL& l, bool border = true) {
     }
     return out;
 }
+// 直線が多角形に切り取られる区間
 VQ cut(const VP& p, L l, bool border = true) { return cut(p, CL(l), border); }
 
 // [-lim,lim]^2 を直線群で分割した各面を返す。各面は反時計回り。
 // 0 < lim <= 10^9。重複直線は除去。境界外の面は返さない。
 // 有理数の点同士の外積を避け、各辺が属する元の整数直線の方向で面をたどる。
 // 直線数 m に対し O(m^2 log m) 時間、O(m^2) 空間。
+// 直線群による平面分割
 vector<VQ> divisions(vector<L> lf, ll lim = 1000000000LL) {
     if (lim <= 0 || lim > 1000000000LL) throw invalid_argument("geometry::divisions: lim range");
     vector<L> ls;
