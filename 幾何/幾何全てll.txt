@@ -1,0 +1,557 @@
+// 整数幾何ライブラリ始め
+// 入力点: |x|, |y| <= 10^9。円の半径: |r| <= 10^9 (負なら絶対値)。
+// 生成した点を再入力するときは、その点も上の制約を満たすこと。
+// 実数版とは同時に使わない想定。すべてグローバル名前空間で使用する。
+// dist / closest_pair / farthest_pair は距離の二乗、area は面積の2倍を返す。
+// proj / refl / crosspoint / cut / divisions は有理数座標 QP / VQ を返す。
+// 有理数は出力用。QP を一般の幾何関数へ再入力する機能は提供しない。
+// 直線は異なる2点で定義する。長さ0の線分は許す。
+// i128 を超える汎用有理数演算を避け、各関数で入力から直接分子・分母を作る。
+// Fraction の出力は整数または num/den。必要な場合だけ (ld)f で実数へ変換する。
+// 不正な直線・分母は invalid_argument、型の範囲を超える演算は overflow_error。
+using R = ll;
+using I = __int128_t;
+
+I geo_add128(I a, I b) {
+    I c;
+    if (__builtin_add_overflow(a, b, &c)) throw overflow_error("geometry: i128 addition");
+    return c;
+}
+I geo_sub128(I a, I b) {
+    I c;
+    if (__builtin_sub_overflow(a, b, &c)) throw overflow_error("geometry: i128 subtraction");
+    return c;
+}
+I geo_mul128(I a, I b) {
+    I c;
+    if (__builtin_mul_overflow(a, b, &c)) throw overflow_error("geometry: i128 multiplication");
+    return c;
+}
+I geo_abs128(I a) { return a < 0 ? geo_sub128(0, a) : a; }
+ll geo_narrow128(I a) {
+    if (a < LLONG_MIN || a > LLONG_MAX) throw overflow_error("geometry: ll range");
+    return ll(a);
+}
+I geo_gcd128(I a, I b) {
+    while (b) { I t = a % b; a = b; b = t; }
+    return a;
+}
+// 非負分数の比較。交差積は最大で i128 を超えるので、連分数を使う。
+int geo_compare_positive(I a, I b, I c, I d) {
+    int direction = 1;
+    while (true) {
+        I x = a / b, y = c / d;
+        if (x != y) return direction * (x < y ? -1 : 1);
+        a %= b; c %= d;
+        if (!a || !c) return direction * ((!a && !c) ? 0 : (!a ? -1 : 1));
+        swap(a, b); swap(c, d); direction = -direction;
+    }
+}
+
+int sgn(I a) { return (a > 0) - (a < 0); }
+bool eq(I a, I b) { return a == b; }
+
+struct Fraction {
+    // 常に den > 0、既約。num/den を外から変更しないこと。
+    I num = 0, den = 1;
+    Fraction(I n = 0, I d = 1) {
+        if (!d) throw invalid_argument("geometry: zero denominator");
+        if (d < 0) { n = geo_sub128(0, n); d = geo_sub128(0, d); }
+        I g = geo_gcd128(geo_abs128(n), d);
+        num = n / g; den = d / g;
+    }
+    friend int compare(const Fraction& a, const Fraction& b) {
+        int sa = sgn(a.num), sb = sgn(b.num);
+        if (sa != sb) return sa < sb ? -1 : 1;
+        if (!sa) return 0;
+        return sa * geo_compare_positive(geo_abs128(a.num), a.den,
+                                         geo_abs128(b.num), b.den);
+    }
+    friend bool operator==(const Fraction& a, const Fraction& b) { return a.num == b.num && a.den == b.den; }
+    friend bool operator!=(const Fraction& a, const Fraction& b) { return !(a == b); }
+    friend bool operator<(const Fraction& a, const Fraction& b) { return compare(a, b) < 0; }
+    friend bool operator>(const Fraction& a, const Fraction& b) { return b < a; }
+    friend bool operator<=(const Fraction& a, const Fraction& b) { return !(b < a); }
+    friend bool operator>=(const Fraction& a, const Fraction& b) { return !(a < b); }
+    explicit operator ld() const { return ld(num) / ld(den); }
+    friend ostream& operator<<(ostream& os, const Fraction& f) {
+        os << f.num;
+        if (f.den != 1) os << '/' << f.den;
+        return os;
+    }
+};
+int sgn(const Fraction& a) { return sgn(a.num); }
+bool eq(const Fraction& a, const Fraction& b) { return a == b; }
+
+struct P {
+    ll x = 0, y = 0;
+    P() = default;
+    P(ll x, ll y) : x(x), y(y) {}
+    friend ll real(P p) { return p.x; }
+    friend ll imag(P p) { return p.y; }
+    friend bool operator==(P a, P b) { return a.x == b.x && a.y == b.y; }
+    friend bool operator!=(P a, P b) { return !(a == b); }
+    friend P operator+(P a, P b) { return {geo_narrow128(I(a.x) + b.x), geo_narrow128(I(a.y) + b.y)}; }
+    friend P operator-(P a, P b) { return {geo_narrow128(I(a.x) - b.x), geo_narrow128(I(a.y) - b.y)}; }
+    friend P operator-(P a) { return {geo_narrow128(-I(a.x)), geo_narrow128(-I(a.y))}; }
+    friend P operator*(P p, ll d) { return {geo_narrow128(I(p.x) * d), geo_narrow128(I(p.y) * d)}; }
+    friend P operator*(ll d, P p) { return p * d; }
+    P& operator+=(P p) { return *this = *this + p; }
+    P& operator-=(P p) { return *this = *this - p; }
+    P& operator*=(ll d) { return *this = *this * d; }
+    friend istream& operator>>(istream& is, P& p) { return is >> p.x >> p.y; }
+    friend ostream& operator<<(ostream& os, P p) { return os << p.x << ' ' << p.y; }
+};
+using VP = vector<P>;
+struct QP {
+    Fraction x, y;
+    QP() = default;
+    QP(Fraction x, Fraction y) : x(x), y(y) {}
+    QP(P p) : x(p.x), y(p.y) {}
+    friend Fraction real(const QP& p) { return p.x; }
+    friend Fraction imag(const QP& p) { return p.y; }
+    friend bool operator==(const QP& a, const QP& b) { return a.x == b.x && a.y == b.y; }
+    friend bool operator!=(const QP& a, const QP& b) { return !(a == b); }
+    friend ostream& operator<<(ostream& os, const QP& p) { return os << p.x << ' ' << p.y; }
+};
+using VQ = vector<QP>;
+QP operator/(P p, ll d) { return {Fraction(p.x, d), Fraction(p.y, d)}; }
+bool cp_x(P p, P q) { return tie(p.x, p.y) < tie(q.x, q.y); }
+bool cp_y(P p, P q) { return tie(p.y, p.x) < tie(q.y, q.x); }
+bool cp_x(const QP& p, const QP& q) { return p.x != q.x ? p.x < q.x : p.y < q.y; }
+bool cp_y(const QP& p, const QP& q) { return p.y != q.y ? p.y < q.y : p.x < q.x; }
+
+struct L {
+    P a, b;
+    L() = default;
+    L(P a, P b) : a(a), b(b) {}
+    friend ostream& operator<<(ostream& os, const L& l) { return os << l.a << ' ' << l.b; }
+    friend istream& operator>>(istream& is, L& l) { return is >> l.a >> l.b; }
+};
+struct S : L {
+    S() = default;
+    S(P a, P b) : L(a, b) {}
+};
+struct C {
+    P p;
+    ll r = 0;
+    C() = default;
+    C(P p, ll r) : p(p), r(geo_narrow128(geo_abs128(I(r)))) {}
+};
+// 整数係数の直線 ax + by + c = 0。垂直二等分線の返り値に使う。
+// 通常の L からも変換できる。係数は公開だが変更しないこと。
+// L / vertical_bisector から作ったものは入力制約内で安全。
+// 係数を直接指定する場合は、後続計算の i128 の範囲も呼び出し側で確認する。
+struct CL {
+    I a = 0, b = 0, c = 0;
+    CL(I a, I b, I c) : a(a), b(b), c(c) {
+        if (!a && !b) throw invalid_argument("geometry: degenerate line");
+        I g = geo_gcd128(geo_gcd128(geo_abs128(a), geo_abs128(b)), geo_abs128(c));
+        this->a /= g; this->b /= g; this->c /= g;
+        if (this->a < 0 || (!this->a && this->b < 0)) {
+            this->a = geo_sub128(0, this->a);
+            this->b = geo_sub128(0, this->b);
+            this->c = geo_sub128(0, this->c);
+        }
+    }
+    CL(L l) : CL(I(l.a.y) - l.b.y, I(l.b.x) - l.a.x,
+                 I(l.a.x) * l.b.y - I(l.a.y) * l.b.x) {}
+};
+
+ll dot(P p, P q) { return geo_narrow128(geo_add128(I(p.x) * q.x, I(p.y) * q.y)); }
+ll det(P p, P q) { return geo_narrow128(geo_sub128(I(p.x) * q.y, I(p.y) * q.x)); }
+ll norm(P p) { return dot(p, p); }
+// 整数版 rot の第2引数はラジアンではなく、反時計回りに90度回す回数。
+template<class T, enable_if_t<is_integral_v<T>, int> = 0>
+P rot(P p, T quarter_turns) {
+    int k = (quarter_turns % 4 + 4) % 4;
+    while (k--) p = P(geo_narrow128(-I(p.y)), p.x);
+    return p;
+}
+
+int ccw(P a, P b, P c) {
+    b -= a; c -= a;
+    int s = sgn(det(b, c));
+    if (s) return s;
+    if (dot(b, c) < 0) return 2;
+    if (norm(b) < norm(c)) return -2;
+    return 0;
+}
+bool para(const CL& a, const CL& b) {
+    return geo_mul128(a.a, b.b) == geo_mul128(a.b, b.a);
+}
+bool orth(const CL& a, const CL& b) {
+    return geo_add128(geo_mul128(a.a, b.a), geo_mul128(a.b, b.b)) == 0;
+}
+bool para(L a, L b) { return para(CL(a), CL(b)); }
+bool orth(L a, L b) { return orth(CL(a), CL(b)); }
+I geo_eval(const CL& l, P p) { return geo_add128(geo_add128(geo_mul128(l.a, p.x), geo_mul128(l.b, p.y)), l.c); }
+I geo_line_norm(const CL& l) { return geo_add128(geo_mul128(l.a, l.a), geo_mul128(l.b, l.b)); }
+QP geo_line_at(const CL& l) {
+    return l.a ? QP(Fraction(geo_sub128(0, l.c), l.a), Fraction(0))
+               : QP(Fraction(0), Fraction(geo_sub128(0, l.c), l.b));
+}
+QP geo_interpolate(P a, P v, I numerator, I denominator) {
+    return {Fraction(geo_add128(geo_mul128(a.x, denominator), geo_mul128(v.x, numerator)), denominator),
+            Fraction(geo_add128(geo_mul128(a.y, denominator), geo_mul128(v.y, numerator)), denominator)};
+}
+
+QP proj(const CL& l, P p) {
+    I e = geo_eval(l, p), n = geo_line_norm(l);
+    return {Fraction(geo_sub128(geo_mul128(p.x, n), geo_mul128(l.a, e)), n),
+            Fraction(geo_sub128(geo_mul128(p.y, n), geo_mul128(l.b, e)), n)};
+}
+QP proj(L l, P p) { return proj(CL(l), p); }
+QP refl(const CL& l, P p) {
+    I e = geo_mul128(2, geo_eval(l, p)), n = geo_line_norm(l);
+    return {Fraction(geo_sub128(geo_mul128(p.x, n), geo_mul128(l.a, e)), n),
+            Fraction(geo_sub128(geo_mul128(p.y, n), geo_mul128(l.b, e)), n)};
+}
+QP refl(L l, P p) { return refl(CL(l), p); }
+bool inter(const CL& l, P p) { return geo_eval(l, p) == 0; }
+bool inter(L l, P p) { return inter(CL(l), p); }
+bool inter(S s, P p) {
+    if (s.a == s.b) return p == s.a;
+    return det(s.b - s.a, p - s.a) == 0 && dot(p - s.a, p - s.b) <= 0;
+}
+bool inter(const CL& l, const CL& m) {
+    return !para(l, m) || (l.a == m.a && l.b == m.b && l.c == m.c);
+}
+bool inter(L l, L m) { return inter(CL(l), CL(m)); }
+bool inter(const CL& l, S s) {
+    return sgn(geo_eval(l, s.a)) * sgn(geo_eval(l, s.b)) <= 0;
+}
+bool inter(S s, const CL& l) { return inter(l, s); }
+bool inter(L l, S s) { return inter(CL(l), s); }
+bool inter(S s, L l) { return inter(l, s); }
+bool inter(S s, S t) {
+    if (s.a == s.b) return inter(t, s.a);
+    if (t.a == t.b) return inter(s, t.a);
+    return ccw(s.a, s.b, t.a) * ccw(s.a, s.b, t.b) <= 0
+        && ccw(t.a, t.b, s.a) * ccw(t.a, t.b, s.b) <= 0;
+}
+
+// 距離の二乗。点同士は ll、それ以外は Fraction を返す。
+ll dist(P p, P q) { return norm(q - p); }
+Fraction dist(const CL& l, P p) {
+    I e = geo_eval(l, p);
+    return Fraction(geo_mul128(e, e), geo_line_norm(l));
+}
+Fraction dist(L l, P p) { return dist(CL(l), p); }
+Fraction dist(S s, P p) {
+    if (s.a == s.b || dot(p - s.a, s.b - s.a) <= 0) return Fraction(dist(s.a, p));
+    if (dot(p - s.b, s.a - s.b) <= 0) return Fraction(dist(s.b, p));
+    return dist(L(s), p);
+}
+Fraction dist(const CL& l, const CL& m) {
+    if (inter(l, m)) return Fraction(0);
+    // 平行線: (c1*a2-c2*a1)^2 / (a2^2*(a1^2+b1^2))。
+    // 先に法線を原始ベクトルへ縮約し、切片差を既約化してから二乗する。
+    I g1 = geo_gcd128(geo_abs128(l.a), geo_abs128(l.b));
+    I g2 = geo_gcd128(geo_abs128(m.a), geo_abs128(m.b));
+    Fraction delta(geo_sub128(geo_mul128(l.c, g2), geo_mul128(m.c, g1)), geo_mul128(g1, g2));
+    I a = l.a / g1, b = l.b / g1;
+    I n = geo_add128(geo_mul128(a, a), geo_mul128(b, b));
+    // 分子の二乗と n の共通因子を先に消す。
+    I v = geo_abs128(delta.num), g = geo_gcd128(v, n);
+    I v1 = v / g; n /= g;
+    g = geo_gcd128(v, n);
+    I v2 = v / g; n /= g;
+    return Fraction(geo_mul128(v1, v2), geo_mul128(geo_mul128(delta.den, delta.den), n));
+}
+Fraction dist(L l, L m) { return inter(l, m) ? Fraction(0) : dist(l, m.a); }
+Fraction dist(S s, S t) {
+    if (inter(s, t)) return Fraction(0);
+    return min({dist(s, t.a), dist(s, t.b), dist(t, s.a), dist(t, s.b)});
+}
+Fraction dist(const CL& l, S s) {
+    return inter(l, s) ? Fraction(0) : min(dist(l, s.a), dist(l, s.b));
+}
+Fraction dist(L l, S s) { return dist(CL(l), s); }
+Fraction dist(S s, L l) { return dist(l, s); }
+Fraction dist(S s, const CL& l) { return dist(l, s); }
+
+bool inter(C c, P p) { return I(dist(c.p, p)) == I(c.r) * c.r; }
+bool inter(C c, const CL& l) { return dist(l, c.p) <= Fraction(I(c.r) * c.r); }
+bool inter(C c, L l) { return inter(c, CL(l)); }
+// 円周と線分の交差。線分全体が円の内部にある場合は false。
+bool inter(C c, S s) {
+    Fraction r2(I(c.r) * c.r);
+    return dist(s, c.p) <= r2 && Fraction(max(dist(c.p, s.a), dist(c.p, s.b))) >= r2;
+}
+
+// 正半径では元と同じ共通接線の本数。完全に同じ円は -1。
+// 半径0を含む場合も、距離による同じ位置関係コードを返す。
+// 共通接線の本数
+// 交点なし:4
+// 外接:3
+// 2点で交わる:2
+// 内接:1
+// 一方がもう一方を内包:0
+int inter(C c1, C c2) {
+    if (c1.p == c2.p && c1.r == c2.r) return -1;
+    I d = dist(c1.p, c2.p), sum = I(c1.r) + c2.r, dif = I(c1.r) - c2.r;
+    if (d > sum * sum) return 4;
+    if (d == sum * sum) return 3;
+    if (d > dif * dif) return 2;
+    if (d == dif * dif) return 1;
+    return 0;
+}
+
+VQ crosspoint(const CL& l, const CL& m) {
+    I d = geo_sub128(geo_mul128(l.a, m.b), geo_mul128(l.b, m.a));
+    if (!d) return inter(l, m) ? VQ{geo_line_at(l)} : VQ{};
+    return {{Fraction(geo_sub128(geo_mul128(l.b, m.c), geo_mul128(l.c, m.b)), d),
+             Fraction(geo_sub128(geo_mul128(l.c, m.a), geo_mul128(l.a, m.c)), d)}};
+}
+// 同一直線なら元と同様に代表点を1つ返す (交点集合全体ではない)。
+VQ crosspoint(L l, L m) {
+    if (para(l, m)) return inter(l, m) ? VQ{QP(m.a)} : VQ{};
+    return crosspoint(CL(l), CL(m));
+}
+VQ crosspoint(const CL& l, S s) {
+    if (!inter(l, s)) return {};
+    if (s.a == s.b) return {QP(s.a)};
+    I a = geo_eval(l, s.a), b = geo_eval(l, s.b);
+    if (!a && !b) {
+        if (cp_x(s.b, s.a)) swap(s.a, s.b);
+        return {QP(s.a), QP(s.b)};
+    }
+    return {geo_interpolate(s.a, s.b - s.a, a, geo_sub128(a, b))};
+}
+VQ crosspoint(S s, const CL& l) { return crosspoint(l, s); }
+VQ crosspoint(L l, S s) { return crosspoint(CL(l), s); }
+VQ crosspoint(S s, L l) { return crosspoint(l, s); }
+// 重なる線分は共通部分の両端、1点で接すればその1点を返す。
+VQ crosspoint(S s, S t) {
+    if (!inter(s, t)) return {};
+    if (s.a == s.b) return {QP(s.a)};
+    if (t.a == t.b) return {QP(t.a)};
+    if (!para(L(s), L(t))) return crosspoint(L(s), L(t));
+    VP points;
+    for (P p : {s.a, s.b, t.a, t.b}) if (inter(s, p) && inter(t, p)) points.push_back(p);
+    sort(points.begin(), points.end(), [](P a, P b) { return cp_x(a, b); });
+    points.erase(unique(points.begin(), points.end()), points.end());
+    VQ out;
+    for (P p : points) out.emplace_back(p);
+    return out;
+}
+CL vertical_bisector(P p, P q) {
+    return CL(2 * (I(q.x) - p.x), 2 * (I(q.y) - p.y), I(norm(p)) - norm(q));
+}
+
+// 符号によらない面積の2倍。単純多角形では <= 8e18。
+// 非凸多角形の途中の累積も安全にするため、戻り値・累積とも i128。
+I area(const VP& p) {
+    I ret = 0;
+    for (size_t i = 0; i < p.size(); ++i) ret = geo_add128(ret, det(p[i], p[(i + 1) % p.size()]));
+    return geo_abs128(ret);
+}
+int in_polygon(const VP& p, P q) {
+    int ret = 0;
+    for (size_t i = 0; i < p.size(); ++i) {
+        P a = p[i] - q, b = p[(i + 1) % p.size()] - q;
+        if (det(a, b) == 0 && dot(a, b) <= 0) return 1;
+        if (a.y > b.y) swap(a, b);
+        if (a.y <= 0 && b.y > 0 && det(a, b) > 0) ret ^= 2;
+    }
+    return ret;
+}
+VP convex_hull(VP p) {
+    sort(p.begin(), p.end(), [](P a, P b) { return cp_x(a, b); });
+    p.erase(unique(p.begin(), p.end()), p.end());
+    int n = int(p.size()), k = 0;
+    if (n <= 1) return p;
+    VP ch(2 * n);
+    for (int i = 0; i < n; ch[k++] = p[i++])
+        while (k >= 2 && det(ch[k - 1] - ch[k - 2], p[i] - ch[k - 1]) <= 0) --k;
+    for (int i = n - 2, t = k + 1; i >= 0; ch[k++] = p[i--])
+        while (k >= t && det(ch[k - 1] - ch[k - 2], p[i] - ch[k - 1]) <= 0) --k;
+    ch.resize(k - 1);
+    return ch;
+}
+// 点が2個未満なら LLONG_MAX。入力重複があれば0。
+ll closest_pair(VP p) {
+    sort(p.begin(), p.end(), [](P a, P b) { return cp_x(a, b); });
+    for (size_t i = 1; i < p.size(); ++i) if (p[i] == p[i - 1]) return 0;
+    VP memo(p.size());
+    function<ll(int, int)> rec = [&](int l, int r) -> ll {
+        if (r - l <= 1) return LLONG_MAX;
+        int m = (l + r) / 2;
+        ll x = p[m].x, ret = min(rec(l, m), rec(m, r));
+        inplace_merge(p.begin() + l, p.begin() + m, p.begin() + r, [](P a, P b) { return cp_y(a, b); });
+        int cnt = 0;
+        for (int i = l; i < r; ++i) {
+            ll dx = p[i].x - x;
+            if (I(dx) * dx >= ret) continue;
+            for (int j = cnt - 1; j >= 0; --j) {
+                ll dy = p[i].y - memo[j].y;
+                if (I(dy) * dy >= ret) break;
+                ret = min(ret, dist(p[i], memo[j]));
+            }
+            memo[cnt++] = p[i];
+        }
+        return ret;
+    };
+    return rec(0, int(p.size()));
+}
+// 空集合・1点は0。凸包 + 回転キャリパー。
+ll farthest_pair(VP p) {
+    VP h = convex_hull(move(p));
+    int n = int(h.size());
+    if (n <= 1) return 0;
+    if (n == 2) return dist(h[0], h[1]);
+    ll ret = 0;
+    int j = 1;
+    for (int i = 0; i < n; ++i) {
+        int ni = (i + 1) % n;
+        auto height = [&](int k) { return det(h[ni] - h[i], h[k] - h[i]); };
+        while (height((j + 1) % n) > height(j)) j = (j + 1) % n;
+        ret = max({ret, dist(h[i], h[j]), dist(h[ni], h[j])});
+        if (height((j + 1) % n) == height(j))
+            ret = max({ret, dist(h[i], h[(j + 1) % n]), dist(h[ni], h[(j + 1) % n])});
+    }
+    return ret;
+}
+// 三角形部分のみ: 符号付き面積の2倍。扇形は実数版を使う。
+ll calc_element(P a, P b, ll /*cr*/, bool triangle) {
+    if (!triangle) throw invalid_argument("geometry::calc_element: sector requires real geometry");
+    return det(a, b);
+}
+int geo_half(P p) {
+    if (p == P()) return 0;
+    return p.y < 0 || (p.y == 0 && p.x > 0) ? -1 : 1;
+}
+bool geo_angle_less(P p, P q) {
+    int a = geo_half(p), b = geo_half(q);
+    return a != b ? a < b : det(p, q) > 0;
+}
+
+//同じ方向の点の順番は未定義
+void arg_sort(VP& v) { sort(v.begin(), v.end(), geo_angle_less); }
+
+// 単純多角形と直線の共通部分を、辞書順の端点対 [l0,r0,l1,r1,...] で返す。
+// border=false は辺上だけの区間・孤立点を除く (返す端点は区間の閉包)。
+// border=true では孤立した接点を [p,p] として含める。O(n log n)。
+VQ cut(const VP& p, const CL& l, bool border = true) {
+    struct Event { QP p; int toggle, boundary; };
+    vector<Event> events;
+    for (size_t i = 0; i < p.size(); ++i) {
+        P a = p[i], b = p[(i + 1) % p.size()];
+        I sa = geo_eval(l, a), sb = geo_eval(l, b);
+        if (!sa) events.push_back({QP(a), 0, 0});
+        if (!sa && !sb && a != b) {
+            if (cp_x(b, a)) swap(a, b);
+            events.push_back({QP(a), 0, 1});
+            events.push_back({QP(b), 0, -1});
+        }
+        if ((sa > 0) != (sb > 0)) {
+            QP q = geo_interpolate(a, b - a, sa, geo_sub128(sa, sb));
+            events.push_back({q, 1, 0});
+        }
+    }
+    sort(events.begin(), events.end(), [](const Event& a, const Event& b) { return cp_x(a.p, b.p); });
+    VQ out;
+    auto append = [&](const QP& a, const QP& b) {
+        if (!out.empty() && out.back() == a) out.back() = b;
+        else { out.push_back(a); out.push_back(b); }
+    };
+    int inside = 0, boundary = 0;
+    for (size_t i = 0; i < events.size();) {
+        size_t j = i;
+        int toggle = 0, delta = 0;
+        while (j < events.size() && events[j].p == events[i].p) {
+            toggle ^= events[j].toggle; delta += events[j].boundary; ++j;
+        }
+        if (border) append(events[i].p, events[i].p);
+        inside ^= toggle; boundary += delta;
+        if (j < events.size() && (boundary ? border : bool(inside))) append(events[i].p, events[j].p);
+        i = j;
+    }
+    return out;
+}
+VQ cut(const VP& p, L l, bool border = true) { return cut(p, CL(l), border); }
+
+// [-lim,lim]^2 を直線群で分割した各面を返す。各面は反時計回り。
+// 0 < lim <= 10^9。重複直線は除去。境界外の面は返さない。
+// 有理数の点同士の外積を避け、各辺が属する元の整数直線の方向で面をたどる。
+// 直線数 m に対し O(m^2 log m) 時間、O(m^2) 空間。
+vector<VQ> divisions(vector<L> lf, ll lim = 1000000000LL) {
+    if (lim <= 0 || lim > 1000000000LL) throw invalid_argument("geometry::divisions: lim range");
+    vector<L> ls;
+    vector<CL> coeff;
+    auto add_line = [&](L l) {
+        CL c(l);
+        for (const CL& d : coeff) if (c.a == d.a && c.b == d.b && c.c == d.c) return;
+        ls.push_back(l); coeff.push_back(c);
+    };
+    VP box{{-lim, -lim}, {lim, -lim}, {lim, lim}, {-lim, lim}};
+    // 境界線を先に置く。最初の辺の逆向き半辺から外側の面を識別する。
+    for (int i = 0; i < 4; ++i) add_line(L(box[i], box[(i + 1) % 4]));
+    for (L l : lf) add_line(l);
+    struct Hit { QP p; int a, b; };
+    vector<Hit> hits;
+    int m = int(ls.size());
+    for (int i = 0; i < m; ++i) for (int j = i + 1; j < m; ++j) {
+        if (para(coeff[i], coeff[j])) continue;
+        QP p = crosspoint(coeff[i], coeff[j])[0];
+        if (p.x >= Fraction(-lim) && p.x <= Fraction(lim)
+            && p.y >= Fraction(-lim) && p.y <= Fraction(lim)) hits.push_back({p, i, j});
+    }
+    sort(hits.begin(), hits.end(), [](const Hit& a, const Hit& b) { return cp_x(a.p, b.p); });
+    VQ points;
+    vector<vector<int>> on(m);
+    for (const Hit& h : hits) {
+        if (points.empty() || points.back() != h.p) points.push_back(h.p);
+        int id = int(points.size()) - 1;
+        on[h.a].push_back(id); on[h.b].push_back(id);
+    }
+    struct Edge { int from, to; P direction; };
+    vector<Edge> edges;
+    vector<vector<int>> outgoing(points.size());
+    int exterior = -1;
+    for (int i = 0; i < m; ++i) {
+        auto& v = on[i];
+        // hits が座標順なので各 on[i] も既に座標順。
+        v.erase(unique(v.begin(), v.end()), v.end());
+        P d = ls[i].b - ls[i].a;
+        if (d.x < 0 || (!d.x && d.y < 0)) d = -d;
+        for (size_t j = 1; j < v.size(); ++j) {
+            int a = v[j - 1], b = v[j], e = int(edges.size());
+            edges.push_back({a, b, d}); edges.push_back({b, a, -d});
+            outgoing[a].push_back(e); outgoing[b].push_back(e ^ 1);
+            if (i == 0) exterior = e ^ 1;
+        }
+    }
+    vector<int> position(edges.size()), next(edges.size());
+    for (auto& v : outgoing) {
+        sort(v.begin(), v.end(), [&](int a, int b) { return geo_angle_less(edges[a].direction, edges[b].direction); });
+        for (int i = 0; i < int(v.size()); ++i) position[v[i]] = i;
+    }
+    for (int e = 0; e < int(edges.size()); ++e) {
+        const auto& v = outgoing[edges[e].to];
+        int k = position[e ^ 1];
+        next[e] = v[(k + int(v.size()) - 1) % v.size()];
+    }
+    vector<bool> used(edges.size(), false);
+    vector<VQ> out;
+    for (int start = 0; start < int(edges.size()); ++start) if (!used[start]) {
+        vector<int> face;
+        bool outside = false;
+        int e = start;
+        do {
+            used[e] = true; outside |= (e == exterior); face.push_back(e); e = next[e];
+        } while (e != start);
+        if (outside) continue;
+        VQ poly;
+        // 同一直線上の中間頂点は省く。
+        for (size_t i = 0; i < face.size(); ++i) {
+            const Edge& prev = edges[face[(i + face.size() - 1) % face.size()]];
+            const Edge& cur = edges[face[i]];
+            if (det(prev.direction, cur.direction) != 0) poly.push_back(points[cur.from]);
+        }
+        if (poly.size() >= 3) out.push_back(move(poly));
+    }
+    return out;
+}
+// 整数幾何ライブラリ終わり
