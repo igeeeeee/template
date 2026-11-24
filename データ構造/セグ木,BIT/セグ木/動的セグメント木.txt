@@ -1,75 +1,124 @@
-// Dynamic Segment Tree
-//verify https://atcoder.jp/contests/abc403/submissions/65613814
-//verify2(updateが+=) https://atcoder.jp/contests/arc075/submissions/76542115
-//ref1 https://tjkendev.github.io/procon-library/cpp/range_query/dynamic_segment_tree.html  updateが変かも？
-//ref2 https://lorent-kyopro.hatenablog.com/entry/2021/03/12/025644 update部分を参考にした
-template<class T>
+// verify https://atcoder.jp/contests/awc0207/submissions/81064565
+template<class S, auto op, auto e>
 struct DynamicSegmentTree {
-  ll n, siz;
-  T e ;
-  function<T(T,T)> op;
-
+private:
   struct Node {
-    Node *left, *right;
-    T v;
-
-    Node(const T& _e) : left(nullptr), right(nullptr), v(_e) {}
-    ~Node() {
-      delete left;
-      delete right;
-    }
+    S v;
+    std::unique_ptr<Node> left, right;
+    explicit Node(S x) : v(std::move(x)) {}
   };
+  ll n;
+  std::unique_ptr<Node> root;
 
-  Node *root;
-
-  DynamicSegmentTree(ll _n,T _e,function<T(T,T)>_op):n(_n),e(_e),op(_op){
-    siz = 1;
-    while(siz < n) siz <<= 1;
-    root = new Node(e);
+  static S value(const Node* t) {
+    return t ? t->v : e();
   }
-  ~DynamicSegmentTree() {
-    delete root; root = nullptr;
-  }
- 
-  void update(Node*& n, ll a, ll b, ll p, T x) {
-    // そのノードがまだ作られていなかったら作る
-    if (!n) n = new Node(e);
-    // 区間幅が 1、つまりセグ木の葉にたどり着いたら値を更新
-    if (b - a == 1) {
-      n->v = x;
+  static void set(std::unique_ptr<Node>& t, ll l, ll r, ll p, S x) {
+    if (!t) t = std::make_unique<Node>(e());
+    if (r - l == 1) {
+      t->v = std::move(x);
       return;
     }
-    // それ以外の場合は左か右の子に進む
-    ll c = a + (b - a) / 2;
-    if (p < c) update(n->left, a, c, p, x);
-    else update(n->right, c, b, p, x);
-    // ノードの値の更新（左右の子が作られていない可能性があることに注意）
-    n->v = e;
-    if (n->left) n->v = op(n->left->v,n->v);
-    if (n->right) n->v = op(n->v,n->right->v);
-  }
-
-  void update(ll p,T x){
-    assert(0 <= p && p < n);
-    update(root,0,siz,p,x);
-  }
- 
-  T query(ll a, ll b) {
-    assert(0 <= a && a <= b && b <= n);
-    return query(a, b, root, 0, siz);
-  }
-
-  T query(ll a, ll b, Node *n, ll l, ll r) {
-    if(r <= a || b <= l) {
-      return e;
-    }
-    if(a <= l && r <= b) {
-      return n->v;
-    }
-  
     ll m = l + (r - l) / 2;
-    T lv = n->left ? query(a, b, n->left, l, m) : e;
-    T rv = n->right ? query(a, b, n->right, m, r) : e;
-    return op(lv,rv);
+    if (p < m) set(t->left, l, m, p, std::move(x));
+    else set(t->right, m, r, p, std::move(x));
+    t->v = op(value(t->left.get()), value(t->right.get()));
+  }
+  static S prod(const Node* t, ll l, ll r, ll a, ll b) {
+    if (!t || r <= a || b <= l) return e();
+    if (a <= l && r <= b) return t->v;
+    ll m = l + (r - l) / 2;
+    return op(prod(t->left.get(), l, m, a, b),
+              prod(t->right.get(), m, r, a, b));
+  }
+  static std::unique_ptr<Node> build(const std::vector<S>& v, ll l, ll r) {
+    if (l == r) return nullptr;
+    if (r - l == 1) return std::make_unique<Node>(v[l]);
+    ll m = l + (r - l) / 2;
+    auto a = build(v, l, m);
+    auto b = build(v, m, r);
+    auto t = std::make_unique<Node>(op(value(a.get()), value(b.get())));
+    t->left = std::move(a);
+    t->right = std::move(b);
+    return t;
+  }
+  template<class F>
+  static ll max_right(const Node* t, ll l, ll r, ll a, S& sm, F& f) {
+    if (!t || r <= a) return -1;
+    if (a <= l) {
+      S nxt = op(sm, t->v);
+      if (f(nxt)) {
+        sm = std::move(nxt);
+        return -1;
+      }
+      if (r - l == 1) return l;
+    }
+    ll m = l + (r - l) / 2;
+    ll res = max_right(t->left.get(), l, m, a, sm, f);
+    if (res != -1) return res;
+    return max_right(t->right.get(), m, r, a, sm, f);
+  }
+  template<class F>
+  static ll min_left(const Node* t, ll l, ll r, ll b, S& sm, F& f) {
+    if (!t || b <= l) return -1;
+    if (r <= b) {
+      S nxt = op(t->v, sm);
+      if (f(nxt)) {
+        sm = std::move(nxt);
+        return -1;
+      }
+      if (r - l == 1) return r;
+    }
+    ll m = l + (r - l) / 2;
+    ll res = min_left(t->right.get(), m, r, b, sm, f);
+    if (res != -1) return res;
+    return min_left(t->left.get(), l, m, b, sm, f);
+  }
+
+public:
+  DynamicSegmentTree() : DynamicSegmentTree(0LL) {}
+  explicit DynamicSegmentTree(ll n) : n(n) {
+    assert(n >= 0);
+  }
+  explicit DynamicSegmentTree(const std::vector<S>& v)
+      : n(static_cast<ll>(v.size())), root(build(v, 0, n)) {}
+
+  void set(ll p, S x) {
+    assert(0 <= p && p < n);
+    set(root, 0, n, p, std::move(x));
+  }
+  S get(ll p) const {
+    if (p < 0 || n <= p) return e();
+    return prod(p, p + 1);
+  }
+  // 範囲外の要素は単位元として扱う
+  S prod(ll l, ll r) const {
+    l = std::max(0LL, l);
+    r = std::min(n, r);
+    if (l >= r) return e();
+    return prod(root.get(), 0, n, l, r);
+  }
+  S all_prod() const {
+    return value(root.get());
+  }
+  template<bool (*f)(S)>
+  ll max_right(ll l) const { return max_right(l, f); }
+  template<class F>
+  ll max_right(ll l, F f) const {
+    assert(f(e()));
+    l = std::clamp(l, 0LL, n);
+    S sm = e();
+    ll res = max_right(root.get(), 0, n, l, sm, f);
+    return res == -1 ? n : res;
+  }
+  template<bool (*f)(S)>
+  ll min_left(ll r) const { return min_left(r, f); }
+  template<class F>
+  ll min_left(ll r, F f) const {
+    assert(f(e()));
+    r = std::clamp(r, 0LL, n);
+    S sm = e();
+    ll res = min_left(root.get(), 0, n, r, sm, f);
+    return res == -1 ? 0 : res;
   }
 };
