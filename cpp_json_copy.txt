@@ -2166,7 +2166,7 @@
 	"Eratosthenes" : {
 		"prefix" : "Eratosthenes_hurui_Esutoratenesu",
 		"body": [
-			"//ref https://qiita.com/drken/items/3beb679e54266f20ab63#5-%E6%B4%BB%E7%94%A8%E4%BE%8B-2-%E3%83%A1%E3%83%93%E3%82%A6%E3%82%B9%E9%96%A2%E6%95%B0%E5%80%A4%E3%81%AE%E5%88%97%E6%8C%99",
+"//ref https://qiita.com/drken/items/3beb679e54266f20ab63#5-%E6%B4%BB%E7%94%A8%E4%BE%8B-2-%E3%83%A1%E3%83%93%E3%82%A6%E3%82%B9%E9%96%A2%E6%95%B0%E5%80%A4%E3%81%AE%E5%88%97%E6%8C%99",
 "struct Eratosthenes{",
 "  ll n;",
 "  vector<bool> isprime;//素数ならtrue",
@@ -2221,7 +2221,7 @@
 "    return ret;",
 "  }",
 "",
-"  //約数列挙 O(約数の個数)　n <= 10^9 のとき 高々1344",
+"  //約数列挙 O(約数の個数) n <= 10^9 のとき 高々1344",
 "  vector<ll> yakusu_rekkyo(ll x){",
 "    vector<ll> ret;",
 "    ret.push_back(1);",
@@ -2237,6 +2237,18 @@
 "      }",
 "    }",
 "    return ret;",
+"  }",
+"  // オイラーのトーシェント関数の列挙 O(N)",
+"  // phi[x]: 1以上x以下のxと互いに素な整数の個数",
+"  // sum_{d|x} phi[d] = x",
+"  vector<ll> totient(){",
+"    vector<ll> phi(n+1);",
+"    phi[1] = 1;",
+"    for(ll x = 2;x <= n;x++){",
+"      ll p = minfact[x], y = x/p;",
+"      phi[x] = phi[y]*(y%p == 0 ? p : p-1);",
+"    }",
+"    return phi;",
 "  }",
 "};",
 "",
@@ -2269,7 +2281,8 @@
 "      F[k] -= F[k * p];",
 "    }",
 "  }",
-"}"
+"}",
+
 		],
 		"description" :"エストラテネスのふるい"
 	},

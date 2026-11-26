@@ -70,6 +70,18 @@ struct Eratosthenes{
     }
     return ret;
   }
+  // オイラーのトーシェント関数の列挙 O(N)
+  // phi[x]: 1以上x以下のxと互いに素な整数の個数
+  // sum_{d|x} phi[d] = x
+  vector<ll> totient(){
+    vector<ll> phi(n+1);
+    phi[1] = 1;
+    for(ll x = 2;x <= n;x++){
+      ll p = minfact[x], y = x/p;
+      phi[x] = phi[y]*(y%p == 0 ? p : p-1);
+    }
+    return phi;
+  }
 };
 
 // 高速ゼータ変換
